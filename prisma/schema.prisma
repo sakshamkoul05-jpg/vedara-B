@@ -1,0 +1,323 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  MANAGER
+  RECEPTIONIST
+  CAFE_STAFF
+}
+
+enum BookingStatus {
+  PENDING
+  RESERVED
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum PaymentGateway {
+  RAZORPAY
+  CASH
+  CARD
+  UPI
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          UserRole  @default(RECEPTIONIST)
+  phone         String?
+  avatar        String?
+  isActive      Boolean   @default(true)
+  refreshToken  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bookings      Booking[]
+  activityLogs  ActivityLog[]
+}
+
+model Guest {
+  id        String    @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  idProof   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  bookings  Booking[]
+}
+
+model Cottage {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  shortDesc     String?
+  pricePerNight Int
+  capacity      Int      @default(2)
+  bedrooms      Int      @default(1)
+  bathrooms     Int      @default(1)
+  size          Int?
+  amenities     Json     @default("[]")
+  images        Json     @default("[]")
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bookings          Booking[]
+  blockedDates      BlockedDate[]
+  seasonalPricings  SeasonalPricing[]
+}
+
+model SeasonalPricing {
+  id          String   @id @default(cuid())
+  cottageId   String
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  pricePerNight Int
+  minStay     Int      @default(1)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  cottage     Cottage  @relation(fields: [cottageId], references: [id], onDelete: Cascade)
+}
+
+model BlockedDate {
+  id        String   @id @default(cuid())
+  cottageId String
+  date      DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  cottage   Cottage  @relation(fields: [cottageId], references: [id], onDelete: Cascade)
+
+  @@unique([cottageId, date])
+}
+
+model Coupon {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  description   String?
+  discountType  String   @default("PERCENTAGE")
+  discountValue Float
+  minAmount     Float    @default(0)
+  maxUsage      Int      @default(0)
+  usedCount     Int      @default(0)
+  isActive      Boolean  @default(true)
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Booking {
+  id              String         @id @default(cuid())
+  bookingRef      String         @unique
+  guestId         String
+  cottageId       String
+  userId          String?
+  checkIn         DateTime
+  checkOut        DateTime
+  adults          Int            @default(2)
+  children        Int            @default(0)
+  totalAmount     Float
+  discount        Float          @default(0)
+  couponCode      String?
+  finalAmount     Float
+  status          BookingStatus  @default(PENDING)
+  holdExpiresAt   DateTime?
+  paymentStatus   PaymentStatus  @default(PENDING)
+  paymentId       String?
+  paymentGateway  PaymentGateway?
+  specialRequests String?
+  source          String         @default("WEBSITE")
+  notes           String?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  guest           Guest          @relation(fields: [guestId], references: [id])
+  cottage         Cottage        @relation(fields: [cottageId], references: [id])
+  user            User?          @relation(fields: [userId], references: [id])
+  payment         Payment?
+}
+
+model Payment {
+  id            String         @id @default(cuid())
+  bookingId     String         @unique
+  orderId       String?
+  paymentId     String?
+  signature     String?
+  amount        Float
+  currency      String         @default("INR")
+  status        PaymentStatus  @default(PENDING)
+  gateway       PaymentGateway @default(RAZORPAY)
+  method        String?
+  description   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  booking       Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model CafeCategory {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?
+  image       String?
+  sortOrder   Int         @default(0)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       CafeItem[]
+}
+
+model CafeItem {
+  id            String        @id @default(cuid())
+  categoryId    String
+  name          String
+  description   String?
+  price         Float
+  image         String?
+  isAvailable   Boolean       @default(true)
+  isVegetarian  Boolean       @default(true)
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  category      CafeCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems    CafeOrderItem[]
+}
+
+model CafeOrder {
+  id            String        @id @default(cuid())
+  orderRef      String        @unique
+  tableNumber   Int
+  guestName     String?
+  notes         String?
+  status        OrderStatus   @default(PENDING)
+  totalAmount   Float
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentId     String?
+  paymentMethod String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  items         CafeOrderItem[]
+}
+
+model CafeOrderItem {
+  id          String      @id @default(cuid())
+  orderId     String
+  itemId      String
+  quantity    Int         @default(1)
+  unitPrice   Float
+  totalPrice  Float
+  notes       String?
+
+  order       CafeOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item        CafeItem    @relation(fields: [itemId], references: [id])
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  content   String
+  rating    Int      @default(5)
+  image     String?
+  isVisible Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  replySent Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Gallery {
+  id        String   @id @default(cuid())
+  image     String
+  caption   String?
+  category  String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
