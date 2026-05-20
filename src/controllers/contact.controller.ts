@@ -24,4 +24,11 @@ export const contactController = {
       res.json({ success: true, data: contact });
     } catch (error) { next(error); }
   },
+
+  async deleteMessage(req: Request, res: Response, next: NextFunction) {
+    try {
+      await prisma.contactMessage.delete({ where: { id: req.params.id } });
+      res.json({ success: true, message: 'Deleted' });
+    } catch (error) { next(error); }
+  },
 };

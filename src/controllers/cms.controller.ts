@@ -79,6 +79,20 @@ export const cmsController = {
     } catch (error) { next(error); }
   },
 
+  async updateTestimonial(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const testimonial = await cmsService.updateTestimonial(req.params.id, req.body);
+      res.json({ success: true, data: testimonial });
+    } catch (error) { next(error); }
+  },
+
+  async deleteTestimonial(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await cmsService.deleteTestimonial(req.params.id);
+      res.json({ success: true, message: 'Deleted' });
+    } catch (error) { next(error); }
+  },
+
   async getFAQs(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const faqs = await prisma.fAQ.findMany({ orderBy: { sortOrder: 'asc' } });
@@ -90,6 +104,20 @@ export const cmsController = {
     try {
       const faq = await cmsService.addFAQ(req.body);
       res.status(201).json({ success: true, data: faq });
+    } catch (error) { next(error); }
+  },
+
+  async updateFAQ(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const faq = await cmsService.updateFAQ(req.params.id, req.body);
+      res.json({ success: true, data: faq });
+    } catch (error) { next(error); }
+  },
+
+  async deleteFAQ(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await cmsService.deleteFAQ(req.params.id);
+      res.json({ success: true, message: 'Deleted' });
     } catch (error) { next(error); }
   },
 
@@ -117,6 +145,23 @@ export const cmsController = {
       const coupon = await cmsService.createCoupon(req.body);
       res.status(201).json({ success: true, data: coupon });
     } catch (error) { next(error); }
+  },
+
+  async updateCoupon(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const coupon = await cmsService.updateCoupon(req.params.id, req.body);
+      res.json({ success: true, data: coupon });
+    } catch (error) { next(error); }
+  },
+
+  async validateCouponCode(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { code, amount } = req.body;
+      const result = await cmsService.validateCoupon(code, amount);
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      res.status(400).json({ success: false, error: error.message });
+    }
   },
 
   async getActivityLogs(req: AuthRequest, res: Response, next: NextFunction) {

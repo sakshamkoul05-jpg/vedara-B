@@ -36,6 +36,14 @@ export class CmsService {
     return prisma.testimonial.create({ data });
   }
 
+  async updateTestimonial(id: string, data: Partial<{ name: string; content: string; rating: number; image: string; isVisible: boolean; sortOrder: number }>) {
+    return prisma.testimonial.update({ where: { id }, data });
+  }
+
+  async deleteTestimonial(id: string) {
+    return prisma.testimonial.delete({ where: { id } });
+  }
+
   // FAQs
   async getFAQs() {
     return prisma.fAQ.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
@@ -47,6 +55,10 @@ export class CmsService {
 
   async updateFAQ(id: string, data: Partial<{ question: string; answer: string; category: string; isActive: boolean; sortOrder: number }>) {
     return prisma.fAQ.update({ where: { id }, data });
+  }
+
+  async deleteFAQ(id: string) {
+    return prisma.fAQ.delete({ where: { id } });
   }
 
   // Contact Messages
@@ -79,8 +91,30 @@ export class CmsService {
     return prisma.coupon.create({ data });
   }
 
+  async updateCoupon(id: string, data: Partial<{
+    code: string; description: string; discountType: string; discountValue: number;
+    minAmount: number; maxUsage: number; usedCount: number; isActive: boolean; expiresAt: Date;
+  }>) {
+    return prisma.coupon.update({ where: { id }, data });
+  }
+
   async deleteCoupon(id: string) {
     return prisma.coupon.delete({ where: { id } });
+  }
+
+  async validateCoupon(code: string, amount: number) {
+    const coupon = await prisma.coupon.findUnique({ where: { code } });
+    if (!coupon) throw new Error('Invalid coupon code');
+    if (!coupon.isActive) throw new Error('Coupon is inactive');
+    if (coupon.expiresAt && new Date() > coupon.expiresAt) throw new Error('Coupon has expired');
+    if (coupon.maxUsage > 0 && coupon.usedCount >= coupon.maxUsage) throw new Error('Coupon usage limit reached');
+    if (amount < coupon.minAmount) throw new Error(`Minimum order amount is ₹${coupon.minAmount}`);
+
+    const discount = coupon.discountType === 'PERCENTAGE'
+      ? (amount * coupon.discountValue) / 100
+      : coupon.discountValue;
+
+    return { coupon, discount, finalAmount: Math.max(0, amount - discount) };
   }
 
   // Dashboard Stats

@@ -21,15 +21,22 @@ router.delete('/gallery/:id', cmsController.deleteGalleryItem);
 
 router.get('/testimonials', cmsController.getTestimonials);
 router.post('/testimonials', cmsController.addTestimonial);
+router.put('/testimonials/:id', cmsController.updateTestimonial);
+router.delete('/testimonials/:id', cmsController.deleteTestimonial);
 
 router.get('/faqs', cmsController.getFAQs);
 router.post('/faqs', cmsController.addFAQ);
+router.put('/faqs/:id', cmsController.updateFAQ);
+router.delete('/faqs/:id', cmsController.deleteFAQ);
 
 router.get('/messages', cmsController.getContactMessages);
 router.put('/messages/:id/read', contactController.markRead);
 
 router.get('/coupons', cmsController.getCoupons);
 router.post('/coupons', cmsController.createCoupon);
+router.post('/coupons/validate', cmsController.validateCouponCode);
+router.put('/coupons/:id', cmsController.updateCoupon);
+router.delete('/coupons/:id', cmsController.deleteCoupon);
 
 router.get('/activity-logs', cmsController.getActivityLogs);
 
