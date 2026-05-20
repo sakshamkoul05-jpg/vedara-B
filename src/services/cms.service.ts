@@ -86,14 +86,14 @@ export class CmsService {
 
   async createCoupon(data: {
     code: string; description?: string; discountType: string; discountValue: number;
-    minAmount?: number; maxUsage?: number; expiresAt?: Date;
+    minAmount?: number; maxUsage?: number; maxUsesPerUser?: number; voucherType?: string; expiresAt?: Date;
   }) {
     return prisma.coupon.create({ data });
   }
 
   async updateCoupon(id: string, data: Partial<{
     code: string; description: string; discountType: string; discountValue: number;
-    minAmount: number; maxUsage: number; usedCount: number; isActive: boolean; expiresAt: Date;
+    minAmount: number; maxUsage: number; maxUsesPerUser: number; voucherType: string; usedCount: number; isActive: boolean; expiresAt: Date;
   }>) {
     return prisma.coupon.update({ where: { id }, data });
   }

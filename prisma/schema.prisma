@@ -132,6 +132,8 @@ model Coupon {
   minAmount     Float    @default(0)
   maxUsage      Int      @default(0)
   usedCount     Int      @default(0)
+  maxUsesPerUser Int      @default(1)
+  voucherType    String   @default("BOTH")
   isActive      Boolean  @default(true)
   expiresAt     DateTime?
   createdAt     DateTime @default(now())
