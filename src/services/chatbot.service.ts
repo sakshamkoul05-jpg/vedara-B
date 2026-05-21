@@ -27,7 +27,7 @@ Speak like a warm mountain host — poetic, calm, and helpful.
 ABOUT VEDARA:
 Nestled in the mountains with 6 luxury cottages and 1 premium room.
 Vintage aesthetic, slow-living philosophy.
-Contact: ${siteInfo.contactEmail || 'hello@vedara.com'}, ${siteInfo.contactPhone || ''}
+Contact: ${siteInfo.contactEmail || 'vedararetreat@gmail.com'}, ${siteInfo.contactPhone || '+91-9118882242'}
 
 COTTAGES:
 ${cottages.map(c => `- ${c.name}: ₹${c.pricePerNight}/night, ${c.capacity} guests, ${c.bedrooms}BR. ${c.shortDesc || c.description.slice(0, 100)}`).join('\n')}

@@ -14,7 +14,7 @@ async function main() {
       password: adminPassword,
       name: 'Vedara Admin',
       role: 'SUPER_ADMIN',
-      phone: '+91-9999999999',
+      phone: '+91-9118882242',
     },
   });
 
