@@ -1,12 +1,12 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import { config } from '../config';
 import prisma from '../config/database';
 
 class ChatbotService {
-  private genAI: GoogleGenerativeAI;
+  private groq: Groq;
 
   constructor() {
-    this.genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    this.groq = new Groq({ apiKey: config.groq.apiKey });
   }
 
   private async getSystemContext(): Promise<string> {
@@ -53,24 +53,20 @@ If you don't know something, say "Let me connect you with our team."
     const systemContext = await this.getSystemContext();
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-      const chat = model.startChat({
-        history: [
-          { role: 'user', parts: [{ text: 'System instruction: ' + systemContext }] },
-          { role: 'model', parts: [{ text: 'Understood. I will act as the Vedara concierge.' }] },
-          ...history.slice(-10).map(m => ({
-            role: m.role === 'assistant' ? 'model' : 'user' as const,
-            parts: [{ text: m.content }],
-          })),
+      const response = await this.groq.chat.completions.create({
+        model: 'llama-3.1-70b-versatile',
+        messages: [
+          { role: 'system', content: systemContext },
+          ...history.slice(-10).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+          { role: 'user', content: message },
         ],
+        max_tokens: 300,
+        temperature: 0.7,
       });
 
-      const result = await chat.sendMessage(message);
-      const response = result.response;
-      return response.text() || 'I apologize, I could not process that. Please try again.';
+      return response.choices[0]?.message?.content || 'I apologize, I could not process that. Please try again.';
     } catch (error: any) {
-      console.error('[Chatbot] Gemini error:', error?.message || error?.status || error);
+      console.error('[Chatbot] Groq error:', error?.message || error?.status || error);
       return 'I apologize, I am having trouble connecting. Please try again or contact our team directly.';
     }
   }

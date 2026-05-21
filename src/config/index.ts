@@ -33,8 +33,8 @@ export const config = {
     from: process.env.EMAIL_FROM || 'noreply@vedara.com',
   },
 
-  gemini: {
-    apiKey: process.env.GEMINI_API_KEY || '',
+  groq: {
+    apiKey: process.env.GROQ_API_KEY || '',
   },
 
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
