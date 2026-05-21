@@ -53,7 +53,7 @@ If you don't know something, say "Let me connect you with our team."
     const systemContext = await this.getSystemContext();
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-latest' });
 
       const chat = model.startChat({
         history: [
