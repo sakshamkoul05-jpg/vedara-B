@@ -44,6 +44,12 @@ POLICIES:
 - Pets not allowed
 - All taxes included
 
+NEARBY ATTRACTIONS:
+- Mini Thailand: 1.2 km — A unique rock formation resembling Thailand's beaches
+- Jibhi Waterfall: 4 km — Cascading waterfall hidden in the forest
+- Jalori Pass: 10 km — High-altitude pass with sweeping mountain views
+- Serolsar Lake: 10 km + short trek — Crystal-clear lake surrounded by ancient oak trees
+
 Keep responses concise (2-3 sentences), warm, and helpful. If asked about booking, guide them to the booking page.
 If you don't know something, say "Let me connect you with our team."
 `;
