@@ -1,12 +1,12 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { config } from '../config';
 import prisma from '../config/database';
 
 class ChatbotService {
-  private openai: OpenAI;
+  private genAI: GoogleGenerativeAI;
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: config.openai.apiKey });
+    this.genAI = new GoogleGenerativeAI(config.gemini.apiKey);
   }
 
   private async getSystemContext(): Promise<string> {
@@ -21,7 +21,7 @@ class ChatbotService {
     const siteInfo = settings.reduce((acc, s) => ({ ...acc, [s.key]: s.value }), {} as any);
 
     return `
-You are a friendly, warm concierge for Vedara Retreat Hotels, a cozy mountain retreat. 
+You are a friendly, warm concierge for Vedara Retreat Hotels, a cozy mountain retreat.
 Speak like a warm mountain host — poetic, calm, and helpful.
 
 ABOUT VEDARA:
@@ -52,23 +52,25 @@ If you don't know something, say "Let me connect you with our team."
   async chat(message: string, history: { role: 'user' | 'assistant'; content: string }[] = []) {
     const systemContext = await this.getSystemContext();
 
-    const messages: any[] = [
-      { role: 'system', content: systemContext },
-      ...history.slice(-10).map(m => ({ role: m.role, content: m.content })),
-      { role: 'user', content: message },
-    ];
-
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages,
-        max_tokens: 300,
-        temperature: 0.7,
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+      const chat = model.startChat({
+        history: [
+          { role: 'user', parts: [{ text: 'System instruction: ' + systemContext }] },
+          { role: 'model', parts: [{ text: 'Understood. I will act as the Vedara concierge.' }] },
+          ...history.slice(-10).map(m => ({
+            role: m.role === 'assistant' ? 'model' : 'user' as const,
+            parts: [{ text: m.content }],
+          })),
+        ],
       });
 
-      return response.choices[0]?.message?.content || 'I apologize, I could not process that. Please try again.';
+      const result = await chat.sendMessage(message);
+      const response = result.response;
+      return response.text() || 'I apologize, I could not process that. Please try again.';
     } catch (error: any) {
-      console.error('[Chatbot] OpenAI error:', error?.message || error?.status || error);
+      console.error('[Chatbot] Gemini error:', error?.message || error?.status || error);
       return 'I apologize, I am having trouble connecting. Please try again or contact our team directly.';
     }
   }
