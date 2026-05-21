@@ -226,8 +226,8 @@ async function main() {
     }
   }
 
+  await prisma.fAQ.deleteMany();
   await prisma.fAQ.createMany({
-    skipDuplicates: true,
     data: [
       { question: 'What is the check-in and check-out time?', answer: 'Check-in is at 2:00 PM and check-out is at 11:00 AM. Early check-in and late check-out can be arranged on request.', category: 'general', sortOrder: 1 },
       { question: 'Is breakfast included?', answer: 'A complimentary farm-style breakfast is served daily from 7:30 AM to 10:00 AM at our cafe.', category: 'general', sortOrder: 2 },
@@ -240,8 +240,8 @@ async function main() {
     ],
   });
 
+  await prisma.testimonial.deleteMany();
   await prisma.testimonial.createMany({
-    skipDuplicates: true,
     data: [
       { name: 'Ananya & Rohit Sharma', content: 'The Pine Perch was everything we dreamed of and more. Waking up to the mist over the mountains, the warm fireplace at night — it was pure magic. We have already booked our next visit.', rating: 5, sortOrder: 1 },
       { name: 'Daniel Park', content: 'As a writer, I needed solitude and inspiration. The Fern Hollow gave me both. I wrote half my manuscript sitting by the stream. The staff was incredibly thoughtful.', rating: 5, sortOrder: 2 },
