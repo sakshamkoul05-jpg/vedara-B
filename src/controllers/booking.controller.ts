@@ -77,7 +77,7 @@ export const bookingController = {
   async cancelBooking(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { reason } = req.body;
-      const booking = await bookingService.cancelBooking(req.params.id, reason);
+      const booking = await bookingService.cancelBooking(req.params.id as string, reason);
       res.json({ success: true, data: booking });
     } catch (error) { next(error); }
   },

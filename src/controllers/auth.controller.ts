@@ -50,7 +50,7 @@ export const authController = {
   async updateUser(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const data = updateUserSchema.parse(req.body);
-      const user = await authService.updateUser(req.params.id, data);
+      const user = await authService.updateUser(req.params.id as string, data);
       res.json({ success: true, data: user });
     } catch (error) { next(error); }
   },

@@ -20,7 +20,7 @@ export const cafeController = {
   async updateOrderStatus(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { status } = req.body;
-      const order = await cafeService.updateOrderStatus(req.params.id, status);
+      const order = await cafeService.updateOrderStatus(req.params.id as string, status);
       res.json({ success: true, data: order });
     } catch (error) { next(error); }
   },
@@ -57,7 +57,7 @@ export const cafeController = {
 
   async updateItem(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const item = await cafeService.updateItem(req.params.id, req.body);
+      const item = await cafeService.updateItem(req.params.id as string, req.body);
       res.json({ success: true, data: item });
     } catch (error) { next(error); }
   },

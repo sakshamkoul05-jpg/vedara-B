@@ -43,7 +43,7 @@ export const cmsController = {
 
   async deleteGalleryItem(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await cmsService.deleteGalleryItem(req.params.id);
+      await cmsService.deleteGalleryItem(req.params.id as string);
       res.json({ success: true, message: 'Deleted' });
     } catch (error) { next(error); }
   },
@@ -58,7 +58,7 @@ export const cmsController = {
   async updateCottage(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const cottage = await prisma.cottage.update({
-        where: { id: req.params.id },
+        where: { id: req.params.id as string },
         data: req.body,
       });
       res.json({ success: true, data: cottage });
@@ -81,14 +81,14 @@ export const cmsController = {
 
   async updateTestimonial(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const testimonial = await cmsService.updateTestimonial(req.params.id, req.body);
+      const testimonial = await cmsService.updateTestimonial(req.params.id as string, req.body);
       res.json({ success: true, data: testimonial });
     } catch (error) { next(error); }
   },
 
   async deleteTestimonial(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await cmsService.deleteTestimonial(req.params.id);
+      await cmsService.deleteTestimonial(req.params.id as string);
       res.json({ success: true, message: 'Deleted' });
     } catch (error) { next(error); }
   },
@@ -109,14 +109,14 @@ export const cmsController = {
 
   async updateFAQ(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const faq = await cmsService.updateFAQ(req.params.id, req.body);
+      const faq = await cmsService.updateFAQ(req.params.id as string, req.body);
       res.json({ success: true, data: faq });
     } catch (error) { next(error); }
   },
 
   async deleteFAQ(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await cmsService.deleteFAQ(req.params.id);
+      await cmsService.deleteFAQ(req.params.id as string);
       res.json({ success: true, message: 'Deleted' });
     } catch (error) { next(error); }
   },
@@ -149,7 +149,7 @@ export const cmsController = {
 
   async updateCoupon(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const coupon = await cmsService.updateCoupon(req.params.id, req.body);
+      const coupon = await cmsService.updateCoupon(req.params.id as string, req.body);
       res.json({ success: true, data: coupon });
     } catch (error) { next(error); }
   },

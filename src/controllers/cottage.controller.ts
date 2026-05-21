@@ -15,7 +15,7 @@ export const cottageController = {
   async getBySlug(req: Request, res: Response, next: NextFunction) {
     try {
       const cottage = await prisma.cottage.findUnique({
-        where: { slug: req.params.slug },
+        where: { slug: req.params.slug as string },
         include: {
           seasonalPricings: { where: { isActive: true } },
         },
@@ -30,7 +30,7 @@ export const cottageController = {
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const cottage = await prisma.cottage.findUnique({
-        where: { id: req.params.id },
+        where: { id: req.params.id as string },
         include: {
           seasonalPricings: { where: { isActive: true } },
         },

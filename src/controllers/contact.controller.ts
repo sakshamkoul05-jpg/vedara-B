@@ -18,7 +18,7 @@ export const contactController = {
   async markRead(req: Request, res: Response, next: NextFunction) {
     try {
       const contact = await prisma.contactMessage.update({
-        where: { id: req.params.id },
+        where: { id: req.params.id as string },
         data: { isRead: true },
       });
       res.json({ success: true, data: contact });
@@ -27,7 +27,7 @@ export const contactController = {
 
   async deleteMessage(req: Request, res: Response, next: NextFunction) {
     try {
-      await prisma.contactMessage.delete({ where: { id: req.params.id } });
+      await prisma.contactMessage.delete({ where: { id: req.params.id as string } });
       res.json({ success: true, message: 'Deleted' });
     } catch (error) { next(error); }
   },
