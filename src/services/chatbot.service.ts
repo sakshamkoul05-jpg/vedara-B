@@ -67,7 +67,8 @@ If you don't know something, say "Let me connect you with our team."
       });
 
       return response.choices[0]?.message?.content || 'I apologize, I could not process that. Please try again.';
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Chatbot] OpenAI error:', error?.message || error?.status || error);
       return 'I apologize, I am having trouble connecting. Please try again or contact our team directly.';
     }
   }
