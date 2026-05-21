@@ -54,7 +54,7 @@ If you don't know something, say "Let me connect you with our team."
 
     try {
       const response = await this.groq.chat.completions.create({
-        model: 'llama-3.1-70b-versatile',
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemContext },
           ...history.slice(-10).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
