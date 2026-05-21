@@ -154,6 +154,13 @@ export const cmsController = {
     } catch (error) { next(error); }
   },
 
+  async deleteCoupon(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await cmsService.deleteCoupon(req.params.id as string);
+      res.json({ success: true, message: 'Deleted' });
+    } catch (error) { next(error); }
+  },
+
   async validateCouponCode(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { code, amount } = req.body;
