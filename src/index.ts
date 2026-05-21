@@ -11,13 +11,19 @@ import { setupSocket } from './sockets';
 import { startCronJobs } from './jobs';
 import { logger } from './utils/logger';
 
+const allowedOrigins = [
+  config.frontendUrl,
+  'https://vedara-f.vercel.app',
+  'https://vedara-f-git-main-sakshamkoul05-jpgs-projects.vercel.app',
+];
+
 const app = express();
 app.set('trust proxy', 1);
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: config.frontendUrl,
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
   },
 });
@@ -25,7 +31,13 @@ const io = new Server(httpServer, {
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
-app.use(cors({ origin: config.frontendUrl, credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(null, true);
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
