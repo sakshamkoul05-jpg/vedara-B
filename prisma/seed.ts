@@ -231,7 +231,7 @@ async function main() {
     data: [
       { question: 'What is the check-in and check-out time?', answer: 'Check-in is at 1:00 PM and check-out is at 11:00 AM. Early check-in and late check-out can be arranged on request.', category: 'general', sortOrder: 1 },
       { question: 'Is breakfast included?', answer: 'A complimentary farm-style breakfast is served daily from 7:30 AM to 10:00 AM at our cafe.', category: 'general', sortOrder: 2 },
-      { question: 'Do you allow pets?', answer: 'Yes! We welcome well-behaved pets in select cottages (The Cedar Nook and Willow Cabin). Please inform us at the time of booking.', category: 'policies', sortOrder: 3 },
+      { question: 'Do you allow pets?', answer: 'Unfortunately, pets are not allowed at Vedara Retreat.', category: 'policies', sortOrder: 3 },
       { question: 'What is your cancellation policy?', answer: 'Free cancellation up to 48 hours before check-in. 50% charge within 48 hours. No-shows are charged the full amount.', category: 'policies', sortOrder: 4 },
       { question: 'Is there WiFi available?', answer: 'Yes, all cottages and common areas have complimentary high-speed WiFi.', category: 'amenities', sortOrder: 5 },
       { question: 'Do you have parking?', answer: 'Yes, we offer complimentary on-site parking for all guests.', category: 'amenities', sortOrder: 6 },
