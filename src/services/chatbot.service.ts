@@ -39,7 +39,7 @@ FAQs:
 ${faqs.map(f => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n')}
 
 POLICIES:
-- Check-in: 2 PM, Check-out: 11 AM
+- Check-in: 1 PM, Check-out: 11 AM
 - Cancellation: Free 48hrs before, 50% within 48hrs
 - Pets allowed on request
 - All taxes included
