@@ -122,12 +122,17 @@ export class CmsService {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - 6);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     const [
       totalBookings, monthlyBookings, yearlyRevenue,
       totalCottages, activeCottages, pendingBookings,
       totalCafeOrders, todayCafeOrders, totalMessages,
-      totalGuests
+      totalGuests, bookingStatuses, weeklyRevenue,
+      cafeRevenue, activeCoupons, todayRevenue,
     ] = await Promise.all([
       prisma.booking.count(),
       prisma.booking.count({ where: { createdAt: { gte: startOfMonth } } }),
@@ -142,19 +147,97 @@ export class CmsService {
       prisma.cafeOrder.count({ where: { createdAt: { gte: startOfMonth } } }),
       prisma.contactMessage.count({ where: { isRead: false } }),
       prisma.guest.count(),
+      prisma.booking.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      prisma.booking.findMany({
+        where: { createdAt: { gte: startOfWeek }, status: 'CONFIRMED' },
+        select: { createdAt: true, finalAmount: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.cafeOrder.aggregate({
+        where: { status: 'DELIVERED' },
+        _sum: { totalAmount: true },
+      }),
+      prisma.coupon.count({ where: { isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gte: now } }] } }),
+      prisma.booking.aggregate({
+        where: { createdAt: { gte: todayStart }, status: 'CONFIRMED' },
+        _sum: { finalAmount: true },
+      }),
     ]);
+
+    // Weekly revenue by day
+    const dailyRevenueMap = new Map<string, number>();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(d.getDate() + i);
+      dailyRevenueMap.set(d.toISOString().split('T')[0], 0);
+    }
+    for (const b of weeklyRevenue) {
+      const key = b.createdAt.toISOString().split('T')[0];
+      if (dailyRevenueMap.has(key)) {
+        dailyRevenueMap.set(key, (dailyRevenueMap.get(key) || 0) + (b.finalAmount || 0));
+      }
+    }
+
+    // Monthly revenue trend (last 6 months)
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const monthlyBookingsData = await prisma.booking.findMany({
+      where: { createdAt: { gte: sixMonthsAgo }, status: 'CONFIRMED' },
+      select: { createdAt: true, finalAmount: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    const monthlyRevenueMap = new Map<string, number>();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthlyRevenueMap.set(key, 0);
+    }
+    for (const b of monthlyBookingsData) {
+      const key = `${b.createdAt.getFullYear()}-${String(b.createdAt.getMonth() + 1).padStart(2, '0')}`;
+      if (monthlyRevenueMap.has(key)) {
+        monthlyRevenueMap.set(key, (monthlyRevenueMap.get(key) || 0) + (b.finalAmount || 0));
+      }
+    }
+
+    // Cafe order status breakdown
+    const cafeStatuses = await prisma.cafeOrder.groupBy({
+      by: ['status'],
+      _count: { id: true },
+    });
+
+    // Recent bookings
+    const recentBookings = await prisma.booking.findMany({
+      where: { status: { not: 'CANCELLED' } },
+      include: { cottage: { select: { name: true } }, guest: { select: { name: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    });
 
     return {
       totalBookings,
       monthlyBookings,
       yearlyRevenue: yearlyRevenue._sum.finalAmount || 0,
+      todayRevenue: todayRevenue._sum.finalAmount || 0,
       totalCottages,
       activeCottages,
       pendingBookings,
       totalCafeOrders,
       todayCafeOrders,
+      cafeRevenue: cafeRevenue._sum.totalAmount || 0,
       unreadMessages: totalMessages,
       totalGuests,
+      activeCoupons,
+      bookingStatusBreakdown: bookingStatuses.map(s => ({ status: s.status, count: s._count.id })),
+      weeklyRevenue: Array.from(dailyRevenueMap.entries()).map(([date, total]) => ({ date, total })),
+      monthlyRevenueTrend: Array.from(monthlyRevenueMap.entries()).map(([month, total]) => ({ month, total })),
+      cafeOrderStatusBreakdown: cafeStatuses.map(s => ({ status: s.status, count: s._count.id })),
+      recentBookings: recentBookings.map(b => ({
+        id: b.id, ref: b.bookingRef, guest: b.guest?.name || 'Guest',
+        cottage: b.cottage?.name || 'N/A', amount: b.finalAmount || b.totalAmount,
+        status: b.status, date: b.createdAt,
+      })),
     };
   }
 
