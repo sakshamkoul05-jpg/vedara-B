@@ -5,7 +5,8 @@ import { cafeService } from '../services/cafe.service';
 export const cafeController = {
   async getMenu(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const menu = await cafeService.getMenu();
+      const showAll = req.query.staff === 'true';
+      const menu = await cafeService.getMenu(showAll);
       res.json({ success: true, data: menu });
     } catch (error) { next(error); }
   },
@@ -59,6 +60,36 @@ export const cafeController = {
     try {
       const item = await cafeService.updateItem(req.params.id as string, req.body);
       res.json({ success: true, data: item });
+    } catch (error) { next(error); }
+  },
+
+  async getDailySales(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const data = await cafeService.getDailySales();
+      res.json({ success: true, data });
+    } catch (error) { next(error); }
+  },
+
+  async getMonthlySales(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const data = await cafeService.getMonthlySales();
+      res.json({ success: true, data });
+    } catch (error) { next(error); }
+  },
+
+  async getTopItems(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const data = await cafeService.getTopItems(limit);
+      res.json({ success: true, data });
+    } catch (error) { next(error); }
+  },
+
+  async getSalesChart(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const days = parseInt(req.query.days as string) || 7;
+      const data = await cafeService.getSalesChart(days);
+      res.json({ success: true, data });
     } catch (error) { next(error); }
   },
 };

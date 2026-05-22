@@ -11,7 +11,12 @@ router.get('/kitchen', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'CAFE_S
 router.put('/orders/:id/status', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'CAFE_STAFF'), cafeController.updateOrderStatus);
 
 router.post('/categories', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), cafeController.addCategory);
-router.post('/items', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), cafeController.addItem);
-router.put('/items/:id', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), cafeController.updateItem);
+router.post('/items', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'CAFE_STAFF'), cafeController.addItem);
+router.put('/items/:id', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'CAFE_STAFF'), cafeController.updateItem);
+
+router.get('/analytics/daily', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'CAFE_STAFF'), cafeController.getDailySales);
+router.get('/analytics/monthly', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'CAFE_STAFF'), cafeController.getMonthlySales);
+router.get('/analytics/top-items', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'CAFE_STAFF'), cafeController.getTopItems);
+router.get('/analytics/sales-chart', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'CAFE_STAFF'), cafeController.getSalesChart);
 
 export default router;

@@ -3,12 +3,12 @@ import { AppError } from '../middleware/errorHandler';
 import { generateOrderRef } from '../utils/helpers';
 
 export class CafeService {
-  async getMenu() {
+  async getMenu(showAll = false) {
     return prisma.cafeCategory.findMany({
       where: { isActive: true },
       include: {
         items: {
-          where: { isAvailable: true },
+          ...(showAll ? {} : { where: { isAvailable: true } }),
           orderBy: { sortOrder: 'asc' },
         },
       },
@@ -125,6 +125,89 @@ export class CafeService {
     isVegetarian: boolean;
   }>) {
     return prisma.cafeItem.update({ where: { id }, data });
+  }
+}
+
+  async getDailySales() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const orders = await prisma.cafeOrder.findMany({
+      where: {
+        status: 'DELIVERED',
+        createdAt: { gte: today, lt: tomorrow },
+      },
+    });
+    const total = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+    const count = orders.length;
+    return { total, count, date: today.toISOString().split('T')[0] };
+  }
+
+  async getMonthlySales() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const orders = await prisma.cafeOrder.findMany({
+      where: {
+        status: 'DELIVERED',
+        createdAt: { gte: start, lt: end },
+      },
+    });
+    const total = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+    const count = orders.length;
+    return { total, count, month: now.getMonth() + 1, year: now.getFullYear() };
+  }
+
+  async getTopItems(limit = 10) {
+    const items = await prisma.cafeOrderItem.groupBy({
+      by: ['itemId'],
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: 'desc' } },
+      take: limit,
+    });
+
+    const itemIds = items.map(i => i.itemId);
+    const menuItems = await prisma.cafeItem.findMany({
+      where: { id: { in: itemIds } },
+      select: { id: true, name: true, price: true },
+    });
+    const itemMap = new Map(menuItems.map(i => [i.id, i]));
+
+    return items.map(i => ({
+      itemId: i.itemId,
+      name: itemMap.get(i.itemId)?.name || 'Unknown',
+      price: itemMap.get(i.itemId)?.price || 0,
+      totalSold: i._sum.quantity || 0,
+    }));
+  }
+
+  async getSalesChart(days = 7) {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+
+    const orders = await prisma.cafeOrder.findMany({
+      where: {
+        status: 'DELIVERED',
+        createdAt: { gte: start, lt: end },
+      },
+      select: { totalAmount: true, createdAt: true },
+    });
+
+    const dailyMap = new Map<string, number>();
+    for (let i = 0; i < days; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      dailyMap.set(d.toISOString().split('T')[0], 0);
+    }
+    for (const o of orders) {
+      const key = o.createdAt.toISOString().split('T')[0];
+      dailyMap.set(key, (dailyMap.get(key) || 0) + o.totalAmount);
+    }
+    return Array.from(dailyMap.entries()).map(([date, total]) => ({ date, total }));
   }
 }
 
