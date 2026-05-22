@@ -30,6 +30,30 @@ async function main() {
     },
   });
 
+  await prisma.user.upsert({
+    where: { email: 'cafe@vedara.com' },
+    update: {},
+    create: {
+      email: 'cafe@vedara.com',
+      password: adminPassword,
+      name: 'Cafe Staff',
+      role: 'CAFE_STAFF',
+      phone: '+91-8888888889',
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'staff@vedara.com' },
+    update: {},
+    create: {
+      email: 'staff@vedara.com',
+      password: adminPassword,
+      name: 'Service Staff',
+      role: 'RECEPTIONIST',
+      phone: '+91-8888888890',
+    },
+  });
+
   const cottages = [
     {
       name: 'The Pine Perch',
