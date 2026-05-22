@@ -139,6 +139,8 @@ async function main() {
     });
   }
 
+  await prisma.cafeOrderItem.deleteMany();
+  await prisma.cafeOrder.deleteMany();
   await prisma.cafeItem.deleteMany();
   await prisma.cafeCategory.deleteMany();
 
