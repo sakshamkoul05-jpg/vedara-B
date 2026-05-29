@@ -80,6 +80,21 @@ export const bookingController = {
     } catch (error) { next(error); }
   },
 
+  async approveBooking(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const booking = await bookingService.approveBooking(req.params.id, req.user?.userId);
+      res.json({ success: true, data: booking });
+    } catch (error) { next(error); }
+  },
+
+  async rejectBooking(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { reason } = req.body;
+      const booking = await bookingService.rejectBooking(req.params.id, reason);
+      res.json({ success: true, data: booking });
+    } catch (error) { next(error); }
+  },
+
   async cancelBooking(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { reason } = req.body;

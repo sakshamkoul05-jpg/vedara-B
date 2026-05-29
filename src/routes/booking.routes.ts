@@ -16,6 +16,8 @@ router.post('/confirm-payment', validate(confirmPaymentSchema), bookingControlle
 router.get('/my-bookings', bookingController.getUserBookings);
 
 router.get('/all', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'), bookingController.getAllBookings);
+router.post('/:id/approve', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), bookingController.approveBooking);
+router.post('/:id/reject', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), bookingController.rejectBooking);
 router.post('/:id/cancel', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'), validate(cancelBookingSchema), bookingController.cancelBooking);
 
 export default router;

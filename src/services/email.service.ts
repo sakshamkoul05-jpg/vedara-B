@@ -101,6 +101,51 @@ class EmailService {
     await this.send({ to: config.adminEmail, subject: `New Booking — ${bookingRef}`, html });
   }
 
+  async sendBookingApproved(email: string, bookingRef: string, guestName: string, cottageName: string, checkIn: Date, checkOut: Date) {
+    const html = `
+      <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background: #faf6f0; padding: 40px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #4a3728; font-size: 28px; margin: 0;">The Vedara</h1>
+          <p style="color: #8b7355; font-size: 14px;">A Himalayan Boutique Retreat</p>
+        </div>
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          <h2 style="color: #2d5a3d; margin-top: 0;">Booking Approved</h2>
+          <p style="color: #4a3728; font-size: 16px; line-height: 1.6;">Dear ${guestName},</p>
+          <p style="color: #4a3728; font-size: 16px; line-height: 1.6;">Your booking <strong>${bookingRef}</strong> at <strong>${cottageName}</strong> has been approved.</p>
+          <table style="width: 100%; margin: 20px 0;">
+            <tr><td style="padding: 8px 0; color: #8b7355;">Booking Reference</td><td style="padding: 8px 0; font-weight: bold;">${bookingRef}</td></tr>
+            <tr><td style="padding: 8px 0; color: #8b7355;">Check-in</td><td style="padding: 8px 0;">${checkIn.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}</td></tr>
+            <tr><td style="padding: 8px 0; color: #8b7355;">Check-out</td><td style="padding: 8px 0;">${checkOut.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}</td></tr>
+          </table>
+          <p style="color: #8b7355; font-size: 14px;">Reception hours: 8:00 AM to 10:30 PM. For any queries, call +91-91188-82242.</p>
+        </div>
+        <div style="text-align: center; margin-top: 30px; color: #8b7355; font-size: 12px;">
+          <p>The Vedara — Ghiyagi, Jibhi, Himachal Pradesh 175123</p>
+        </div>
+      </div>
+    `;
+    await this.send({ to: email, subject: `Booking Approved — ${bookingRef}`, html });
+  }
+
+  async sendBookingRejected(email: string, bookingRef: string, guestName: string, reason?: string) {
+    const html = `
+      <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background: #faf6f0; padding: 40px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #4a3728; font-size: 28px; margin: 0;">The Vedara</h1>
+          <p style="color: #8b7355; font-size: 14px;">A Himalayan Boutique Retreat</p>
+        </div>
+        <div style="background: white; padding: 30px; border-radius: 8px;">
+          <h2 style="color: #8b4513; margin-top: 0;">Booking Not Approved</h2>
+          <p style="color: #4a3728;">Dear ${guestName},</p>
+          <p style="color: #4a3728;">We regret to inform you that your booking <strong>${bookingRef}</strong> could not be approved.</p>
+          ${reason ? `<p style="color: #8b7355;"><strong>Reason:</strong> ${reason}</p>` : ''}
+          <p style="color: #8b7355;">If you have any questions, please contact us at +91-91188-82242.</p>
+        </div>
+      </div>
+    `;
+    await this.send({ to: email, subject: `Booking Not Approved — ${bookingRef}`, html });
+  }
+
   async sendCancellationConfirmation(email: string, bookingRef: string, guestName: string) {
     const html = `
       <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background: #faf6f0; padding: 40px; border-radius: 8px;">

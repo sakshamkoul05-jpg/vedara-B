@@ -363,6 +363,68 @@ export class BookingService {
     return calendar;
   }
 
+  async approveBooking(bookingId: string, approvedBy?: string) {
+    return prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: { guest: true, cottage: true },
+      });
+
+      if (!booking) throw new AppError('Booking not found', 404);
+      if (booking.status !== 'PENDING') {
+        throw new AppError('Only pending bookings can be approved', 400);
+      }
+
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: 'CONFIRMED', paymentStatus: 'PAID' },
+      });
+
+      if (booking.guest.email) {
+        await emailService.sendBookingApproved(
+          booking.guest.email,
+          booking.bookingRef,
+          booking.guest.name,
+          booking.cottage.name,
+          booking.checkIn,
+          booking.checkOut
+        );
+      }
+
+      return { ...booking, status: 'CONFIRMED' };
+    });
+  }
+
+  async rejectBooking(bookingId: string, reason?: string) {
+    return prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: { guest: true, cottage: true },
+      });
+
+      if (!booking) throw new AppError('Booking not found', 404);
+      if (booking.status !== 'PENDING') {
+        throw new AppError('Only pending bookings can be rejected', 400);
+      }
+
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: 'CANCELLED', cancelledAt: new Date(), cancelReason: reason || 'Rejected by admin' },
+      });
+
+      if (booking.guest.email) {
+        await emailService.sendBookingRejected(
+          booking.guest.email,
+          booking.bookingRef,
+          booking.guest.name,
+          reason
+        );
+      }
+
+      return { ...booking, status: 'CANCELLED' };
+    });
+  }
+
   async cancelBooking(bookingId: string, reason?: string) {
     const booking = await prisma.booking.update({
       where: { id: bookingId },
