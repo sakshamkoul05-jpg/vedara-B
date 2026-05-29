@@ -135,7 +135,10 @@ export class BookingService {
         });
       }
 
-      const finalAmount = Math.max(0, totalAmount - discount);
+      const amountAfterDiscount = Math.max(0, totalAmount - discount);
+      const taxRate = 0.12;
+      const tax = Math.round(amountAfterDiscount * taxRate);
+      const finalAmount = amountAfterDiscount + tax;
 
       let guest = await tx.guest.findFirst({
         where: {

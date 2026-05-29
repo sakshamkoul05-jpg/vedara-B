@@ -29,8 +29,14 @@ export const bookingController = {
 
   async createBooking(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const { checkIn, checkOut, adults, children, ...rest } = req.body;
+
       const booking = await bookingService.createBooking({
-        ...req.body,
+        ...rest,
+        checkIn: new Date(checkIn),
+        checkOut: new Date(checkOut),
+        adults: parseInt(adults) || 2,
+        children: parseInt(children) || 0,
         userId: req.user?.userId,
         source: req.body.source || 'WEBSITE',
       });
