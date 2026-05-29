@@ -126,7 +126,6 @@ export class CafeService {
   }>) {
     return prisma.cafeItem.update({ where: { id }, data });
   }
-}
 
   async getDailySales() {
     const today = new Date();

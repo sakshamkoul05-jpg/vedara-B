@@ -3,6 +3,8 @@ import { config } from '../config';
 import { AppError } from '../middleware/errorHandler';
 import { generateBookingRef, calculateNights, isDateOverlap } from '../utils/helpers';
 import { emailService } from './email.service';
+import { whatsappService } from './whatsapp.service';
+import { paymentService } from './payment.service';
 
 export class BookingService {
   async checkAvailability(cottageId: string, checkIn: Date, checkOut: Date) {
@@ -215,7 +217,14 @@ export class BookingService {
           where: { id: booking.id },
           data: { status: 'CANCELLED', cancelReason: 'Availability conflict during payment processing' },
         });
-        throw new AppError('Sorry, the cottage was booked by someone else. Payment will be refunded.', 409);
+
+        try {
+          await paymentService.refundPayment(paymentData.paymentId, booking.finalAmount);
+        } catch (refundError: any) {
+          console.error('Refund failed for booking conflict:', booking.bookingRef, refundError?.message);
+        }
+
+        throw new AppError('Sorry, the cottage was booked by someone else. Your payment has been refunded.', 409);
       }
 
       await tx.booking.update({
@@ -236,6 +245,7 @@ export class BookingService {
         },
       });
 
+      // Guest email confirmation
       await emailService.sendBookingConfirmation(
         booking.guest.email || 'guest@vedara.com',
         booking.bookingRef,
@@ -245,6 +255,29 @@ export class BookingService {
         booking.checkOut,
         booking.finalAmount
       );
+
+      // Admin email alert
+      await emailService.sendAdminBookingAlert(
+        booking.bookingRef,
+        booking.guest.name,
+        booking.guest.email || '',
+        booking.guest.phone || '',
+        booking.cottage.name,
+        booking.checkIn,
+        booking.checkOut,
+        booking.finalAmount
+      );
+
+      // WhatsApp alert to 9118882242
+      await whatsappService.sendBookingAlert({
+        bookingRef: booking.bookingRef,
+        guestName: booking.guest.name,
+        guestPhone: booking.guest.phone || 'N/A',
+        cottageName: booking.cottage.name,
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+        amount: booking.finalAmount,
+      });
 
       return { ...booking, status: 'CONFIRMED' };
     });
@@ -341,6 +374,12 @@ export class BookingService {
         booking.guest.name
       );
     }
+
+    await whatsappService.sendCancellationAlert(
+      booking.bookingRef,
+      booking.guest.name,
+      booking.cottage.name
+    );
 
     return booking;
   }

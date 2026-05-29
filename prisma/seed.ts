@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   const adminPassword = await bcrypt.hash('admin123', 12);
 
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'admin@vedara.com' },
     update: {},
     create: {
@@ -18,7 +18,7 @@ async function main() {
     },
   });
 
-  const manager = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'manager@vedara.com' },
     update: {},
     create: {
@@ -54,103 +54,236 @@ async function main() {
     },
   });
 
+  // Clear existing cottages and re-create with new data
+  await prisma.blockedDate.deleteMany();
+  await prisma.seasonalPricing.deleteMany();
+  await prisma.booking.deleteMany();
+  await prisma.cottage.deleteMany();
+
   const cottages = [
     {
-      name: 'The Pine Perch',
-      slug: 'pine-perch',
-      description: 'Perched among towering pines, this cottage offers panoramic mountain views from its private deck. Wake up to the scent of cedar and the sound of birdsong. Features a handcrafted wooden bed, stone fireplace, and an outdoor soaking tub under the stars.',
-      shortDesc: 'A secluded pine-wood haven with mountain views',
-      pricePerNight: 8500,
-      capacity: 2,
-      bedrooms: 1,
-      bathrooms: 1,
-      size: 450,
-      amenities: JSON.stringify(['King Bed', 'Fireplace', 'Private Deck', 'Outdoor Tub', 'WiFi', 'Mini Bar', 'Mountain View']),
-      images: JSON.stringify(['/images/cottages/pine-perch-1.jpg', '/images/cottages/pine-perch-2.jpg']),
+      name: 'Monal Haven',
+      slug: 'monal-haven',
+      shortDesc: 'Luxury Duplex with Jacuzzi — embrace the canopy life',
+      description: `Embrace the Canopy Life
+
+Named after the radiant Himalayan Monal, this premium 552 sq. ft. duplex is a masterpiece of mountain luxury. Designed with an elegant wooden attic and massive glass windows, Monal Haven invites the raw beauty of the Ghiyagi peaks straight into your room.
+
+Sip morning coffee on your private love seat, or step onto your attic balcony—thoughtfully designed to double as your private yoga and meditation deck. When night falls, draw the blackout curtains to seal in the warmth of your room, wrap yourself in our plush quilts, and enjoy an undisturbed, deeply restorative sleep.
+
+Space & Comfort: 552 sq. ft. (51 sq. m.) Duplex Layout | Cozy Attic Space | Private Love Seat & Coffee Table | Blackout Curtains
+
+The Luxury Touch: Private Premium Jacuzzi | Attic-Linked Yoga & Meditation Balcony | Second Sitting Balcony | Complimentary Slippers & Luxury Toiletries
+
+Refreshments: In-room Electric Kettle with a selection of Premium Complimentary Tea & Coffee
+
+Amenities: Panoramic Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping, Chargeable Laundry.`,
+      pricePerNight: 12000,
+      capacity: 4,
+      bedrooms: 2,
+      bathrooms: 2,
+      size: 552,
+      amenities: JSON.stringify([
+        '2 King Size Beds', 'Private Jacuzzi', 'Attic Yoga & Meditation Balcony',
+        'Second Sitting Balcony', 'Love Seat & Coffee Table', 'Blackout Curtains',
+        'Electric Kettle with Tea & Coffee', 'Complimentary Slippers', 'Luxury Toiletries',
+        'Attached Modern Bathroom', 'High-Speed Internet', 'Room Heater (Winter)',
+        'Panoramic Mountain Views', 'Room Service', 'Housekeeping', 'Laundry (Chargeable)'
+      ]),
+      images: JSON.stringify(['/images/cottages/monal-haven-1.jpg', '/images/cottages/monal-haven-2.jpg']),
       sortOrder: 1,
     },
     {
-      name: 'The Cedar Nook',
-      slug: 'cedar-nook',
-      description: 'Tucked away in a grove of ancient cedars, this intimate cottage is perfect for a romantic escape. The interiors blend rustic wood with soft linens, and the private garden features a hammock and fire pit.',
-      shortDesc: 'Intimate cedar retreat with a private garden',
+      name: 'Koklass Cove',
+      slug: 'koklass-cove',
+      shortDesc: 'Our Largest Duplex with Jacuzzi — your private mountain sanctuary',
+      description: `Your Private Mountain Sanctuary
+
+Spanning an expansive 566 sq. ft., Koklass Cove is our largest duplex cottage, offering unmatched privacy and spatial luxury. Perfect for families or friend groups who value room to breathe, this cottage features a dramatic attic framework and two viewing balconies.
+
+Wake up early, brew a warm cup of coffee, and head up to the attic balcony—the perfect elevated sanctuary for morning yoga and meditation as the mountain mist rolls over the pine trees. At night, ensure ultimate privacy and deep rest by closing the premium blackout curtains, sliding into your indoor slippers, and tucking into heavy, mountain-grade quilts designed to keep the crisp Jibhi chill at bay.
+
+Space & Comfort: 566 sq. ft. (52 sq. m.) Max-Space Duplex | Signature Wooden Attic | Intimate Love Seat Lounge | Blackout Curtains
+
+The Luxury Touch: Private Premium Jacuzzi | Attic-Linked Yoga & Meditation Balcony | Second Sitting Balcony | Complimentary Slippers & Luxury Toiletries
+
+Refreshments: In-room Electric Kettle with a selection of Premium Complimentary Tea & Coffee
+
+Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping, Chargeable Laundry.`,
+      pricePerNight: 12500,
+      capacity: 4,
+      bedrooms: 2,
+      bathrooms: 2,
+      size: 566,
+      amenities: JSON.stringify([
+        '2 King Size Beds', 'Private Jacuzzi', 'Attic Yoga & Meditation Balcony',
+        'Second Sitting Balcony', 'Love Seat Lounge', 'Blackout Curtains',
+        'Electric Kettle with Tea & Coffee', 'Complimentary Slippers', 'Luxury Toiletries',
+        'Attached Luxury Bathroom', 'High-Speed Internet', 'Room Heater (Winter)',
+        'Sweeping Mountain Views', 'Room Service', 'Housekeeping', 'Laundry (Chargeable)'
+      ]),
+      images: JSON.stringify(['/images/cottages/koklass-cove-1.jpg', '/images/cottages/koklass-cove-2.jpg']),
+      sortOrder: 2,
+    },
+    {
+      name: 'Magpie Retreat',
+      slug: 'magpie-retreat',
+      shortDesc: 'Charming Duplex with Bath Tub — where serenity meets soul',
+      description: `Where Serenity Meets Soul
+
+Inspired by the elegant calls of the Himalayan Magpie, this beautifully balanced 556 sq. ft. duplex offers a classic, deeply comforting mountain retreat. The crown jewel of this cottage is its deep, relaxing bath tub—ideal for a warm, soothing soak using our premium complimentary toiletries after exploring the local waterfall trails.
+
+Featuring a gorgeous structural attic, a dual-balcony setup, and an attic balcony perfectly optimized for quiet yoga and meditation, Magpie Retreat captures the restorative magic of a boutique hideaway. Complete your nighttime routine by drawing the blackout curtains, sliding into warm room slippers, and melting into our premium quilts for a perfect night's rest.
+
+Space & Comfort: 556 sq. ft. (51 sq. m.) Balanced Duplex Layout | Charming Attic Nook | Love Seat & Coffee Table Set | Blackout Curtains
+
+The Luxury Touch: Deep-Soak Bath Tub | Attic-Linked Yoga & Meditation Balcony | Second Sitting Balcony | Complimentary Slippers & Luxury Toiletries
+
+Refreshments: In-room Electric Kettle with a selection of Premium Complimentary Tea & Coffee
+
+Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping, Chargeable Laundry.`,
+      pricePerNight: 11000,
+      capacity: 4,
+      bedrooms: 2,
+      bathrooms: 2,
+      size: 556,
+      amenities: JSON.stringify([
+        '2 King Size Beds', 'Deep-Soak Bath Tub', 'Attic Yoga & Meditation Balcony',
+        'Second Sitting Balcony', 'Love Seat & Coffee Table', 'Blackout Curtains',
+        'Electric Kettle with Tea & Coffee', 'Complimentary Slippers', 'Luxury Toiletries',
+        'Attached Modern Bathroom', 'High-Speed Internet', 'Room Heater (Winter)',
+        'Unobstructed Mountain Views', 'Room Service', 'Housekeeping', 'Laundry (Chargeable)'
+      ]),
+      images: JSON.stringify(['/images/cottages/magpie-retreat-1.jpg', '/images/cottages/magpie-retreat-2.jpg']),
+      sortOrder: 3,
+    },
+    {
+      name: 'Whistling Thrush',
+      slug: 'whistling-thrush',
+      shortDesc: 'Intimate Mountain View Suite — a melody of mountain quietude',
+      description: `A Melody of Mountain Quietude
+
+Named after the iconic whistling bird of the Himalayas, this beautifully appointed 270 sq. ft. cottage is a retreat for couples and solo seekers. Whistling Thrush combines cozy mountain warmth with high-end comfort, featuring a plush king-size bed wrapped in heavy, mountain-grade quilts.
+
+Wake up to unobstructed valley views, brew a fresh cup of tea, and sit out on your balcony using the two outdoor chairs and small table. Inside, a dedicated seating area with two single chairs and a coffee table provides the perfect nook to unwind. After dusk, pull the premium blackout curtains, and let the peaceful sounds of the Ghiyagi night lull you to sleep.
+
+Space & Comfort: 270 sq. ft. (25 sq. m.) Intimate Layout | Indoor Seating (2 Single Chairs & Coffee Table) | Blackout Curtains
+
+The Luxury Touch: Private Panoramic Balcony (2 Chairs & Small Table) | Complimentary Room Slippers & Luxury Toiletries
+
+Refreshments: In-room Electric Kettle with a complimentary selection of Tea & Coffee sachets
+
+Amenities: Stunning Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping (Laundry chargeable).`,
       pricePerNight: 7500,
       capacity: 2,
       bedrooms: 1,
       bathrooms: 1,
-      size: 380,
-      amenities: JSON.stringify(['Queen Bed', 'Garden', 'Fire Pit', 'Hammock', 'WiFi', 'Tea Kettle']),
-      images: JSON.stringify(['/images/cottages/cedar-nook-1.jpg', '/images/cottages/cedar-nook-2.jpg']),
-      sortOrder: 2,
-    },
-    {
-      name: 'The Maple Suite',
-      slug: 'maple-suite',
-      description: 'Our largest cottage, the Maple Suite, features two bedrooms, a living room with a grand fireplace, and a wraparound veranda. Surrounded by maples that turn crimson in autumn, it is ideal for families or small groups.',
-      shortDesc: 'Spacious family cottage with wraparound veranda',
-      pricePerNight: 14000,
-      capacity: 4,
-      bedrooms: 2,
-      bathrooms: 2,
-      size: 750,
-      amenities: JSON.stringify(['2 Queen Beds', 'Living Room', 'Fireplace', 'Veranda', 'WiFi', 'Kitchenette', 'Mountain View']),
-      images: JSON.stringify(['/images/cottages/maple-suite-1.jpg', '/images/cottages/maple-suite-2.jpg']),
-      sortOrder: 3,
-    },
-    {
-      name: 'The Fern Hollow',
-      slug: 'fern-hollow',
-      description: 'Nestled in a lush hollow dotted with ferns and wildflowers, this cottage feels like a storybook hideaway. A cozy loft bedroom, stained-glass windows, and a stream-side seating area make it truly magical.',
-      shortDesc: 'Storybook hideaway in a fern-filled hollow',
-      pricePerNight: 6500,
-      capacity: 2,
-      bedrooms: 1,
-      bathrooms: 1,
-      size: 320,
-      amenities: JSON.stringify(['Loft Bed', 'Stained Glass', 'Stream View', 'WiFi', 'Patio']),
-      images: JSON.stringify(['/images/cottages/fern-hollow-1.jpg', '/images/cottages/fern-hollow-2.jpg']),
+      size: 270,
+      amenities: JSON.stringify([
+        '1 King Size Bed', 'Private Panoramic Balcony',
+        'Indoor Seating (2 Chairs & Table)', 'Blackout Curtains',
+        'Electric Kettle with Tea & Coffee', 'Complimentary Slippers', 'Luxury Toiletries',
+        'Attached Modern Bathroom', 'High-Speed Internet', 'Room Heater (Winter)',
+        'Stunning Mountain Views', 'Room Service', 'Housekeeping', 'Laundry (Chargeable)'
+      ]),
+      images: JSON.stringify(['/images/cottages/whistling-thrush-1.jpg', '/images/cottages/whistling-thrush-2.jpg']),
       sortOrder: 4,
     },
     {
-      name: 'The Ridge View',
-      slug: 'ridge-view',
-      description: 'Perched on the highest point of the property, Ridge View offers uninterrupted panoramas of the valley and distant peaks. A glass-walled living area brings the outdoors in, while the private infinity tub is pure bliss.',
-      shortDesc: 'Panoramic ridge-top luxury with infinity tub',
-      pricePerNight: 11000,
+      name: 'Flycatcher Nook',
+      slug: 'flycatcher-nook',
+      shortDesc: 'Intimate Mountain View Suite — your cozy Himalayan hideaway',
+      description: `Your Cozy Himalayan Hideaway
+
+Flycatcher Nook is a charming 270 sq. ft. escape designed specifically for those who appreciate the quieter moments of mountain life. The room is thoughtfully optimized to maximize comfort, offering a warm, wood-accented atmosphere featuring two single indoor chairs and a coffee table.
+
+Spend your afternoons reading out on the balcony with its dedicated two-chair seating setup, or wrap yourself in our thick, warm quilts with a freshly brewed coffee in hand. It is an idyllic, self-contained haven for travelers looking to unplug without sacrificing modern boutique luxuries.
+
+Space & Comfort: 270 sq. ft. (25 sq. m.) Intimate Layout | Indoor Seating (2 Single Chairs & Coffee Table) | Blackout Curtains
+
+The Luxury Touch: Private Panoramic Balcony (2 Chairs & Small Table) | Complimentary Room Slippers & Luxury Toiletries
+
+Refreshments: In-room Electric Kettle with a complimentary selection of Tea & Coffee sachets
+
+Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping (Laundry chargeable).`,
+      pricePerNight: 7500,
       capacity: 2,
       bedrooms: 1,
       bathrooms: 1,
-      size: 500,
-      amenities: JSON.stringify(['King Bed', 'Glass Living', 'Infinity Tub', 'Deck', 'WiFi', 'Bar', 'Valley View']),
-      images: JSON.stringify(['/images/cottages/ridge-view-1.jpg', '/images/cottages/ridge-view-2.jpg']),
+      size: 270,
+      amenities: JSON.stringify([
+        '1 King Size Bed', 'Private Panoramic Balcony',
+        'Indoor Seating (2 Chairs & Table)', 'Blackout Curtains',
+        'Electric Kettle with Tea & Coffee', 'Complimentary Slippers', 'Luxury Toiletries',
+        'Attached Luxury Bathroom', 'High-Speed Internet', 'Room Heater (Winter)',
+        'Sweeping Mountain Views', 'Room Service', 'Housekeeping', 'Laundry (Chargeable)'
+      ]),
+      images: JSON.stringify(['/images/cottages/flycatcher-nook-1.jpg', '/images/cottages/flycatcher-nook-2.jpg']),
       sortOrder: 5,
     },
     {
-      name: 'The Willow Cabin',
-      slug: 'willow-cabin',
-      description: 'Set beside a gentle stream under the shade of weeping willows, this cabin exudes tranquility. The sound of water, the soft glow of lanterns, and the hammock strung between trees create an atmosphere of pure peace.',
-      shortDesc: 'Streamside cabin with willow-shaded hammock',
-      pricePerNight: 7000,
+      name: 'Bulbul Nest',
+      slug: 'bulbul-nest',
+      shortDesc: 'Intimate Mountain View Suite with Workstation — where coziness meets the peaks',
+      description: `Where Coziness Meets the Peaks
+
+Perched to offer beautiful, unobstructed vistas of the surrounding wilderness, Bulbul Nest is a perfectly balanced 270 sq. ft. retreat curated for couples and remote professionals alike. This suite seamlessly features a dedicated workstation setup complete with a functional study table and chair, offering an inspiring remote work environment amidst the pines.
+
+Slip into your complimentary room slippers, step onto the balcony to watch the mist clear over the mountains from your two outdoor chairs, or cocoon yourself inside under premium quilts next to your indoor coffee table and twin single chairs. With blackout curtains to ensure absolute morning privacy and high-speed internet to fuel your workflows, it represents the absolute pinnacle of luxury workcation setups.
+
+Space & Comfort: 270 sq. ft. (25 sq. m.) Workcation Layout | Dedicated Workstation (Study Table & Chair) | Indoor Lounge Seating (2 Single Chairs & Coffee Table) | Blackout Curtains
+
+The Luxury Touch: Private Panoramic Balcony (2 Chairs & Small Table) | Complimentary Room Slippers & Luxury Toiletries
+
+Refreshments: In-room Electric Kettle with a complimentary selection of Tea & Coffee sachets
+
+Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping (Laundry chargeable).`,
+      pricePerNight: 7500,
       capacity: 2,
       bedrooms: 1,
       bathrooms: 1,
-      size: 350,
-      amenities: JSON.stringify(['Queen Bed', 'Streamside', 'Hammock', 'Lanterns', 'WiFi', 'Outdoor Shower']),
-      images: JSON.stringify(['/images/cottages/willow-cabin-1.jpg', '/images/cottages/willow-cabin-2.jpg']),
+      size: 270,
+      amenities: JSON.stringify([
+        '1 King Size Bed', 'Dedicated Workstation (Study Table & Chair)',
+        'Private Panoramic Balcony', 'Indoor Lounge Seating (2 Chairs & Table)',
+        'Blackout Curtains', 'Electric Kettle with Tea & Coffee',
+        'Complimentary Slippers', 'Luxury Toiletries',
+        'Attached Modern Bathroom', 'High-Speed Internet', 'Room Heater (Winter)',
+        'Unobstructed Mountain Views', 'Room Service', 'Housekeeping', 'Laundry (Chargeable)'
+      ]),
+      images: JSON.stringify(['/images/cottages/bulbul-nest-1.jpg', '/images/cottages/bulbul-nest-2.jpg']),
       sortOrder: 6,
     },
     {
-      name: 'The Summit Room',
-      slug: 'summit-room',
-      description: 'Our premium room within the main lodge, the Summit Room blends Victorian elegance with mountain charm. High ceilings, a four-poster bed, and a bay window seat with telescope for stargazing.',
-      shortDesc: 'Premium lodge room with Victorian charm',
-      pricePerNight: 5500,
+      name: 'The Finch Nook',
+      slug: 'the-finch-nook',
+      shortDesc: 'Cozy Alpine Studio — small space, boundless solitude',
+      description: `Small Space, Boundless Solitude
+
+Thoughtfully engineered for the solo adventurer, remote writer, or minimalist traveler, The Finch Nook is an intimate 120 sq. ft. alpine retreat. Enwrapped in floor-to-ceiling warm wooden paneling, this room captures the nostalgic essence of a classic mountain cabinette.
+
+Whether you are using the dedicated study desk to pen your next journal entry, brewing a hot cup of coffee, or diving into the plush queen bed after a day of crisp mountain air, this room offers a highly functional, deeply comforting refuge where every square inch is designed with purpose.
+
+Space & Comfort: 120 sq. ft. (11 sq. m.) Intelligent Minimalist Layout | Premium Wooden Paneling | Dedicated Study Desk & Chair | Blackout Curtains
+
+Refreshments: In-room Electric Kettle with a selection of Premium Complimentary Tea & Coffee
+
+The Hospitality Touch: Complimentary Room Slippers & Luxury Toiletries Included
+
+Amenities: Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping.`,
+      pricePerNight: 5000,
       capacity: 2,
       bedrooms: 1,
       bathrooms: 1,
-      size: 280,
-      amenities: JSON.stringify(['Four-Poster Bed', 'Bay Window', 'Telescope', 'WiFi', 'Lodge Access', 'Breakfast']),
-      images: JSON.stringify(['/images/cottages/summit-room-1.jpg', '/images/cottages/summit-room-2.jpg']),
+      size: 120,
+      amenities: JSON.stringify([
+        '1 Queen Size Bed', 'Dedicated Study Desk & Chair',
+        'Premium Wooden Paneling', 'Blackout Curtains',
+        'Electric Kettle with Tea & Coffee', 'Complimentary Slippers', 'Luxury Toiletries',
+        'Attached Modern Bathroom', 'High-Speed Internet', 'Room Heater (Winter)',
+        'Room Service', 'Housekeeping'
+      ]),
+      images: JSON.stringify(['/images/cottages/the-finch-nook-1.jpg', '/images/cottages/the-finch-nook-2.jpg']),
       sortOrder: 7,
     },
   ];
@@ -158,11 +291,24 @@ async function main() {
   for (const cottage of cottages) {
     await prisma.cottage.upsert({
       where: { slug: cottage.slug },
-      update: {},
+      update: {
+        name: cottage.name,
+        shortDesc: cottage.shortDesc,
+        description: cottage.description,
+        pricePerNight: cottage.pricePerNight,
+        capacity: cottage.capacity,
+        bedrooms: cottage.bedrooms,
+        bathrooms: cottage.bathrooms,
+        size: cottage.size,
+        amenities: cottage.amenities,
+        images: cottage.images,
+        sortOrder: cottage.sortOrder,
+      },
       create: cottage,
     });
   }
 
+  // Cafe data
   await prisma.cafeOrderItem.deleteMany();
   await prisma.cafeOrder.deleteMany();
   await prisma.cafeItem.deleteMany();
@@ -364,7 +510,6 @@ async function main() {
     const created = await prisma.cafeCategory.create({
       data: { name: category.name, slug: category.slug, description: category.description, sortOrder: category.sortOrder },
     });
-
     for (const item of category.items) {
       await prisma.cafeItem.create({
         data: {
@@ -379,33 +524,35 @@ async function main() {
     }
   }
 
+  // FAQs
   await prisma.fAQ.deleteMany();
   await prisma.fAQ.createMany({
     data: [
-      { question: 'What is the check-in and check-out time?', answer: 'Check-in is at 1:00 PM and check-out is at 11:00 AM. Early check-in and late check-out can be arranged on request.', category: 'general', sortOrder: 1 },
-      { question: 'Is breakfast included?', answer: 'A complimentary farm-style breakfast is served daily from 7:30 AM to 10:00 AM at our cafe.', category: 'general', sortOrder: 2 },
-      { question: 'Do you allow pets?', answer: 'Unfortunately, pets are not allowed at Vedara Retreat.', category: 'policies', sortOrder: 3 },
-      { question: 'What is your cancellation policy?', answer: 'Free cancellation up to 48 hours before check-in. 50% charge within 48 hours. No-shows are charged the full amount.', category: 'policies', sortOrder: 4 },
+      { question: 'What is the check-in and check-out time?', answer: 'Check-in is at 1:00 PM and check-out is at 11:00 AM. Early check-in and late check-out can be arranged on request. Reception is open from 8:00 AM to 10:30 PM.', category: 'general', sortOrder: 1 },
+      { question: 'Is breakfast included?', answer: 'A complimentary farm-style breakfast is served daily from 7:30 AM to 10:00 AM at Café Charade.', category: 'general', sortOrder: 2 },
+      { question: 'Do you allow pets?', answer: 'Unfortunately, pets are not allowed at The Vedara.', category: 'policies', sortOrder: 3 },
+      { question: 'What is your cancellation policy?', answer: 'Free cancellation up to 15 days before check-in (90% refund). 50% refund for 8-15 days. No refund within 7 days. See our <a href="/policies#cancellation" class="text-forest-600 underline">full cancellation policy</a> for details.', category: 'policies', sortOrder: 4 },
       { question: 'Is there WiFi available?', answer: 'Yes, all cottages and common areas have complimentary high-speed WiFi.', category: 'amenities', sortOrder: 5 },
       { question: 'Do you have parking?', answer: 'Yes, we offer complimentary on-site parking for all guests.', category: 'amenities', sortOrder: 6 },
-      { question: 'Are there activities nearby?', answer: 'We offer guided nature walks, stargazing sessions, bonfire evenings, and can arrange trekking, bird watching, and local village tours.', category: 'activities', sortOrder: 7 },
-      { question: 'Is the cafe open to outside visitors?', answer: 'Absolutely! Our cafe is open to all from 7:00 AM to 9:00 PM. Non-guests are welcome to enjoy our food and ambiance.', category: 'cafe', sortOrder: 8 },
+      { question: 'Are there activities nearby?', answer: 'We offer guided nature walks, stargazing sessions, bonfire evenings, and can arrange trekking, bird watching, and local village tours. See our <a href="/#experiences" class="text-forest-600 underline">experiences section</a>.', category: 'activities', sortOrder: 7 },
+      { question: 'Is the cafe open to outside visitors?', answer: 'Absolutely! Café Charade is open to all. Breakfast: 7:30 AM – 10:00 AM, Lunch: 12:00 PM – 3:30 PM, Dinner: 7:00 PM – 10:00 PM. Non-guests are welcome.', category: 'cafe', sortOrder: 8 },
     ],
   });
 
+  // Testimonials
   await prisma.testimonial.deleteMany();
   await prisma.testimonial.createMany({
     data: [
-      { name: 'Ananya & Rohit Sharma', content: 'The Pine Perch was everything we dreamed of and more. Waking up to the mist over the mountains, the warm fireplace at night — it was pure magic. We have already booked our next visit.', rating: 5, sortOrder: 1 },
-      { name: 'Daniel Park', content: 'As a writer, I needed solitude and inspiration. The Fern Hollow gave me both. I wrote half my manuscript sitting by the stream. The staff was incredibly thoughtful.', rating: 5, sortOrder: 2 },
-      { name: 'Emily & James Cooper', content: 'We celebrated our anniversary at the Ridge View and it was perfection. The infinity tub under the stars, the glass-walled living room — we felt like we were floating above the world.', rating: 5, sortOrder: 3 },
-      { name: 'Priya Mehta', content: 'The Maple Suite was perfect for our family reunion. The kids loved the veranda, and we spent every evening by the grand fireplace. The breakfast at the cafe is to die for!', rating: 5, sortOrder: 4 },
+      { name: 'Ananya & Rohit Sharma', content: 'Monal Haven was everything we dreamed of and more. Waking up to mist over the mountains, the jacuzzi under the stars — pure magic. We\'ve already booked our next visit.', rating: 5, sortOrder: 1 },
+      { name: 'Daniel Park', content: 'As a writer, I needed solitude and inspiration. Whistling Thrush gave me both. I wrote half my manuscript on the balcony. The staff was incredibly thoughtful.', rating: 5, sortOrder: 2 },
+      { name: 'Emily & James Cooper', content: 'We celebrated our anniversary at Koklass Cove and it was perfection. The attic yoga balcony, the sweeping views — we felt like we were floating above the world.', rating: 5, sortOrder: 3 },
+      { name: 'Priya Mehta', content: 'Magpie Retreat was perfect for our family getaway. The bath tub was divine, and we spent every evening watching the sunset from the balcony. The breakfast at Café Charade is to die for!', rating: 5, sortOrder: 4 },
     ],
   });
 
   console.log('Seed data created successfully!');
-  console.log(`Admin: admin@vedara.com / admin123`);
-  console.log(`Manager: manager@vedara.com / admin123`);
+  console.log('Admin: admin@vedara.com / admin123');
+  console.log('Manager: manager@vedara.com / admin123');
 }
 
 main()
