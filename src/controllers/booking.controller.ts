@@ -123,4 +123,15 @@ export const bookingController = {
       res.json({ success: true, ...result });
     } catch (error) { next(error); }
   },
+
+  async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { status } = req.body;
+      if (!status) {
+        return res.status(400).json({ success: false, error: 'Status is required' });
+      }
+      const booking = await bookingService.updateBookingStatus(req.params.id, status);
+      res.json({ success: true, data: booking });
+    } catch (error) { next(error); }
+  },
 };

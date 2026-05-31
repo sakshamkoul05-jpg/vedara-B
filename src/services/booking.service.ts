@@ -498,6 +498,32 @@ export class BookingService {
 
     return { bookings, total, page: params.page, totalPages: Math.ceil(total / params.limit) };
   }
+
+  async updateBookingStatus(bookingId: string, status: string) {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { guest: true, cottage: true },
+    });
+
+    if (!booking) throw new AppError('Booking not found', 404);
+
+    const validTransitions: Record<string, string[]> = {
+      CONFIRMED: ['CHECKED_IN'],
+      CHECKED_IN: ['CHECKED_OUT'],
+    };
+
+    if (!validTransitions[booking.status]?.includes(status)) {
+      throw new AppError(`Cannot transition from ${booking.status} to ${status}`, 400);
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: status as any },
+      include: { guest: true, cottage: true },
+    });
+
+    return updated;
+  }
 }
 
 export const bookingService = new BookingService();

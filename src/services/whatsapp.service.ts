@@ -89,6 +89,19 @@ class WhatsAppService {
 
     await this.sendTextMessage(text);
   }
+
+  async sendLiveChatAlert(name: string, phone?: string, email?: string) {
+    const text = `💬 *Live Chat Request at The Vedara!*
+
+👤 *Guest:* ${name}
+${phone ? `📞 *Phone:* ${phone}` : ''}
+${email ? `📧 *Email:* ${email}` : ''}
+⏰ *Time:* ${new Date().toLocaleString('en-IN')}
+
+Reply from the admin panel: https://vedara-f.vercel.app/admin/chat`;
+
+    await this.sendTextMessage(text);
+  }
 }
 
 export const whatsappService = new WhatsAppService();

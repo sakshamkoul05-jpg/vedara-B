@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
+import { whatsappService } from '../services/whatsapp.service';
 
 const prisma = new PrismaClient();
 
@@ -33,8 +34,9 @@ export function setupSocket(io: Server) {
             content: 'Connected to live support. An agent will be with you shortly.',
           },
         });
-        socket.emit('chat:connected', { conversationId: conversation.id, message: botMsg });
-        io.to('admin').emit('chat:new', { conversation });
+        whatsappService.sendLiveChatAlert(data.name, data.phone, data.email);
+      socket.emit('chat:connected', { conversationId: conversation.id, message: botMsg });
+      io.to('admin').emit('chat:new', { conversation });
       } catch (err) {
         socket.emit('chat:error', { message: 'Failed to start live chat' });
       }

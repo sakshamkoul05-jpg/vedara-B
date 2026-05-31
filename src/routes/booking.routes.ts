@@ -19,5 +19,6 @@ router.get('/all', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'RECEPTIONI
 router.post('/:id/approve', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), bookingController.approveBooking);
 router.post('/:id/reject', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), bookingController.rejectBooking);
 router.post('/:id/cancel', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'), validate(cancelBookingSchema), bookingController.cancelBooking);
+router.put('/:id/status', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'), bookingController.updateStatus);
 
 export default router;
