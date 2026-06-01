@@ -87,6 +87,7 @@ model Cottage {
   bedrooms      Int      @default(1)
   bathrooms     Int      @default(1)
   size          Int?
+  category      String?
   amenities     Json     @default("[]")
   images        Json     @default("[]")
   isActive      Boolean  @default(true)

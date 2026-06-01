@@ -76,6 +76,7 @@ async function main() {
     {
       name: 'Monal Haven',
       slug: 'monal-haven',
+      category: 'Premium Duplex Family Suite',
       shortDesc: 'Luxury Duplex with Jacuzzi — embrace the canopy life',
       description: `Embrace the Canopy Life
 
@@ -108,6 +109,7 @@ Amenities: Panoramic Mountain Views, Attached Modern Bathroom, High-Speed Intern
     {
       name: 'Koklass Cove',
       slug: 'koklass-cove',
+      category: 'Premium Duplex Family Suite',
       shortDesc: 'Our Largest Duplex with Jacuzzi — your private mountain sanctuary',
       description: `Your Private Mountain Sanctuary
 
@@ -140,6 +142,7 @@ Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Interne
     {
       name: 'Magpie Retreat',
       slug: 'magpie-retreat',
+      category: 'Premium Duplex Family Suite',
       shortDesc: 'Charming Duplex with Bath Tub — where serenity meets soul',
       description: `Where Serenity Meets Soul
 
@@ -172,6 +175,7 @@ Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Int
     {
       name: 'Whistling Thrush',
       slug: 'whistling-thrush',
+      category: 'Intimate Mountain View Suite',
       shortDesc: 'Intimate Mountain View Suite — a melody of mountain quietude',
       description: `A Melody of Mountain Quietude
 
@@ -204,6 +208,7 @@ Amenities: Stunning Mountain Views, Attached Modern Bathroom, High-Speed Interne
     {
       name: 'Flycatcher Nook',
       slug: 'flycatcher-nook',
+      category: 'Intimate Mountain View Suite',
       shortDesc: 'Intimate Mountain View Suite — your cozy Himalayan hideaway',
       description: `Your Cozy Himalayan Hideaway
 
@@ -236,6 +241,7 @@ Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Interne
     {
       name: 'Bulbul Nest',
       slug: 'bulbul-nest',
+      category: 'Intimate Mountain View Suite',
       shortDesc: 'Intimate Mountain View Suite with Workstation — where coziness meets the peaks',
       description: `Where Coziness Meets the Peaks
 
@@ -269,6 +275,7 @@ Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Int
     {
       name: 'The Finch Nook',
       slug: 'the-finch-nook',
+      category: 'Cozy Alpine Studio',
       shortDesc: 'Cozy Alpine Studio — small space, boundless solitude',
       description: `Small Space, Boundless Solitude
 
@@ -312,6 +319,7 @@ Amenities: Attached Modern Bathroom, High-Speed Internet, Room Heater (complimen
         bedrooms: cottage.bedrooms,
         bathrooms: cottage.bathrooms,
         size: cottage.size,
+        category: cottage.category,
         amenities: cottage.amenities,
         images: cottage.images,
         sortOrder: cottage.sortOrder,
