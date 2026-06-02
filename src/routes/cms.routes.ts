@@ -42,4 +42,16 @@ router.get('/activity-logs', cmsController.getActivityLogs);
 
 router.get('/users', cmsController.getUsers);
 
+router.get('/staff', cmsController.getStaff);
+router.post('/staff', cmsController.createStaff);
+router.put('/staff/:id', cmsController.updateStaff);
+router.post('/staff/:id/fire', cmsController.fireStaff);
+router.post('/staff/:id/hire', cmsController.hireStaff);
+router.delete('/staff/:id', cmsController.deleteStaff);
+
+router.get('/packages', cmsController.getPackages);
+router.post('/packages', cmsController.createPackage);
+router.put('/packages/:id', cmsController.updatePackage);
+router.delete('/packages/:id', cmsController.deletePackage);
+
 export default router;

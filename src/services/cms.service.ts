@@ -256,6 +256,76 @@ export class CmsService {
     return { logs, total, page: params.page, totalPages: Math.ceil(total / params.limit) };
   }
 
+  // Staff
+  async getStaff(params: { status?: string; page?: number; limit?: number }) {
+    const where: any = {};
+    if (params.status) where.status = params.status;
+    const page = params.page || 1;
+    const limit = params.limit || 50;
+    const [staff, total] = await Promise.all([
+      prisma.staff.findMany({
+        where, orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit, take: limit,
+      }),
+      prisma.staff.count({ where }),
+    ]);
+    return { staff, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  async createStaff(data: { name: string; phone: string; employeeId: string; role?: string; salary?: number; address?: string; photo?: string }) {
+    return prisma.staff.create({ data: { ...data, status: 'ACTIVE', hiredAt: new Date() } });
+  }
+
+  async updateStaff(id: string, data: Partial<{ name: string; phone: string; role: string; salary: number; address: string; photo: string; status: string; employeeId: string }>) {
+    return prisma.staff.update({ where: { id }, data });
+  }
+
+  async fireStaff(id: string) {
+    return prisma.staff.update({ where: { id }, data: { status: 'FIRED', firedAt: new Date() } });
+  }
+
+  async hireStaff(id: string) {
+    return prisma.staff.update({ where: { id }, data: { status: 'ACTIVE', firedAt: null, hiredAt: new Date() } });
+  }
+
+  async deleteStaff(id: string) {
+    return prisma.staff.delete({ where: { id } });
+  }
+
+  // Packages
+  async getPackages() {
+    return prisma.package.findMany({ orderBy: { sortOrder: 'asc' } });
+  }
+
+  async getActivePackages() {
+    const now = new Date();
+    return prisma.package.findMany({
+      where: {
+        isActive: true,
+        AND: [
+          { OR: [{ startDate: null }, { startDate: { lte: now } }] },
+          { OR: [{ endDate: null }, { endDate: { gte: now } }] },
+        ],
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+  }
+
+  async createPackage(data: { title: string; description?: string; image?: string; link?: string; startDate?: string; endDate?: string; sortOrder?: number }) {
+    return prisma.package.create({ data: { ...data, startDate: data.startDate ? new Date(data.startDate) : undefined, endDate: data.endDate ? new Date(data.endDate) : undefined } });
+  }
+
+  async updatePackage(id: string, data: Partial<{ title: string; description: string; image: string; link: string; startDate: string; endDate: string; isActive: boolean; sortOrder: number }>) {
+    const updateData: any = { ...data };
+    if (data.startDate) updateData.startDate = new Date(data.startDate);
+    if (data.endDate) updateData.endDate = new Date(data.endDate);
+    return prisma.package.update({ where: { id }, data: updateData });
+  }
+
+  async deletePackage(id: string) {
+    return prisma.package.delete({ where: { id } });
+  }
+
   async logActivity(data: { userId?: string; action: string; entity?: string; entityId?: string; details?: any; ipAddress?: string }) {
     return prisma.activityLog.create({ data });
   }
