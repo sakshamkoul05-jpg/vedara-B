@@ -5,6 +5,9 @@ import { contactController } from '../controllers/contact.controller';
 
 const router = Router();
 
+router.get('/coupons/active', cmsController.getActiveCoupons);
+router.post('/coupons/validate', cmsController.validateCouponCode);
+
 router.use(authenticate, authorize('SUPER_ADMIN', 'MANAGER'));
 
 router.get('/dashboard', cmsController.getDashboard);
@@ -34,7 +37,6 @@ router.put('/messages/:id/read', contactController.markRead);
 
 router.get('/coupons', cmsController.getCoupons);
 router.post('/coupons', cmsController.createCoupon);
-router.post('/coupons/validate', cmsController.validateCouponCode);
 router.put('/coupons/:id', cmsController.updateCoupon);
 router.delete('/coupons/:id', cmsController.deleteCoupon);
 

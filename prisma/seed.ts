@@ -389,7 +389,7 @@ async function main() {
       { question: 'Is there WiFi available?', answer: 'Yes, all cottages and common areas have complimentary high-speed WiFi.', category: 'amenities', sortOrder: 5 },
       { question: 'Do you have parking?', answer: 'Yes, we offer complimentary on-site parking for all guests.', category: 'amenities', sortOrder: 6 },
       { question: 'Are there activities nearby?', answer: 'We offer guided nature walks, stargazing sessions, bonfire evenings, and can arrange trekking, bird watching, and local village tours.', category: 'activities', sortOrder: 7 },
-      { question: 'Is the cafe open to outside visitors?', answer: 'Absolutely! Our cafe is open to all from 7:00 AM to 9:00 PM. Non-guests are welcome to enjoy our food and ambiance.', category: 'cafe', sortOrder: 8 },
+      { question: 'Is the cafe open to outside visitors?', answer: 'Absolutely! Our cafe is open to all from 7:30 AM to 10:00 PM. Non-guests are welcome to enjoy our food and ambiance.', category: 'cafe', sortOrder: 8 },
     ],
   });
 

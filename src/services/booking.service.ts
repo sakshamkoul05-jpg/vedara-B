@@ -106,6 +106,9 @@ export class BookingService {
       }
 
       let totalAmount = pricePerNight * nights;
+      const extraGuests = Math.max(0, (data.adults + (data.children || 0)) - 2);
+      const extraGuestCharges = extraGuests * 1500 * nights;
+      totalAmount += extraGuestCharges;
       let discount = 0;
 
       if (data.couponCode) {

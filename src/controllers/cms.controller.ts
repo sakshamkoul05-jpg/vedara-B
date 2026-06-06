@@ -133,6 +133,17 @@ export const cmsController = {
     } catch (error) { next(error); }
   },
 
+  async getActiveCoupons(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const coupons = await prisma.coupon.findMany({
+        where: { isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }] },
+        select: { code: true, description: true, discountType: true, discountValue: true, voucherType: true, minAmount: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ success: true, data: coupons });
+    } catch (error) { next(error); }
+  },
+
   async getCoupons(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const coupons = await cmsService.getCoupons();
