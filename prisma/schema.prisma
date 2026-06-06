@@ -18,6 +18,8 @@ enum BookingStatus {
   PENDING
   RESERVED
   CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
   CANCELLED
   EXPIRED
 }
@@ -85,8 +87,10 @@ model Cottage {
   bedrooms      Int      @default(1)
   bathrooms     Int      @default(1)
   size          Int?
+  category      String?
   amenities     Json     @default("[]")
   images        Json     @default("[]")
+  heaterCharge  Int      @default(500)
   isActive      Boolean  @default(true)
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())
@@ -109,6 +113,41 @@ model SeasonalPricing {
   createdAt   DateTime @default(now())
 
   cottage     Cottage  @relation(fields: [cottageId], references: [id], onDelete: Cascade)
+}
+
+enum StaffStatus {
+  ACTIVE
+  FIRED
+}
+
+model Staff {
+  id            String      @id @default(cuid())
+  name          String
+  phone         String
+  employeeId    String      @unique
+  role          String      @default("Staff")
+  salary        Int?
+  address       String?
+  photo         String?
+  status        StaffStatus @default(ACTIVE)
+  hiredAt       DateTime    @default(now())
+  firedAt       DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Package {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  image       String?
+  link        String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model BlockedDate {
@@ -311,6 +350,44 @@ model Gallery {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum ChatSenderType {
+  GUEST
+  ADMIN
+}
+
+enum ChatConversationStatus {
+  ACTIVE
+  CLOSED
+}
+
+model ChatConversation {
+  id        String                @id @default(cuid())
+  guestName String
+  guestEmail String?
+  guestPhone String?
+  status    ChatConversationStatus @default(ACTIVE)
+  socketId  String?
+  assignedTo String?
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id              String          @id @default(cuid())
+  conversationId  String
+  senderType      ChatSenderType
+  senderId        String?
+  senderName      String?
+  content         String
+  createdAt       DateTime        @default(now())
+
+  conversation    ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
 }
 
 model FAQ {

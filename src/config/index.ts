@@ -40,4 +40,13 @@ export const config = {
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 
   bookingHoldMinutes: parseInt(process.env.BOOKING_HOLD_MINUTES || '15', 10),
+
+  whatsapp: {
+    apiUrl: process.env.WHATSAPP_API_URL || '',
+    apiKey: process.env.WHATSAPP_API_KEY || '',
+    toNumber: process.env.WHATSAPP_TO_NUMBER || '919118882242',
+  },
+
+  adminEmail: process.env.ADMIN_EMAIL || 'vedararetreat@gmail.com',
+  adminPhone: process.env.ADMIN_PHONE || '919118882242',
 };

@@ -3,6 +3,8 @@ import { config } from '../config';
 import { AppError } from '../middleware/errorHandler';
 import { generateBookingRef, calculateNights, isDateOverlap } from '../utils/helpers';
 import { emailService } from './email.service';
+import { whatsappService } from './whatsapp.service';
+import { paymentService } from './payment.service';
 
 export class BookingService {
   async checkAvailability(cottageId: string, checkIn: Date, checkOut: Date) {
@@ -136,7 +138,10 @@ export class BookingService {
         });
       }
 
-      const finalAmount = Math.max(0, totalAmount - discount);
+      const amountAfterDiscount = Math.max(0, totalAmount - discount);
+      const taxRate = 0.12;
+      const tax = Math.round(amountAfterDiscount * taxRate);
+      const finalAmount = amountAfterDiscount + tax;
 
       let guest = await tx.guest.findFirst({
         where: {
@@ -192,37 +197,44 @@ export class BookingService {
     gateway: string;
     method?: string;
   }) {
-    return prisma.$transaction(async (tx) => {
-      const booking = await tx.booking.findUnique({
+    const booking = await prisma.$transaction(async (tx) => {
+      const b = await tx.booking.findUnique({
         where: { id: bookingId },
         include: { guest: true, cottage: true },
       });
 
-      if (!booking) throw new AppError('Booking not found', 404);
-      if (booking.status !== 'PENDING' && booking.status !== 'RESERVED') {
+      if (!b) throw new AppError('Booking not found', 404);
+      if (b.status !== 'PENDING' && b.status !== 'RESERVED') {
         throw new AppError('Booking cannot be confirmed', 400);
       }
 
       const conflicting = await tx.booking.findFirst({
         where: {
-          cottageId: booking.cottageId,
-          id: { not: booking.id },
+          cottageId: b.cottageId,
+          id: { not: b.id },
           status: { in: ['PENDING', 'RESERVED', 'CONFIRMED'] },
-          checkIn: { lt: booking.checkOut },
-          checkOut: { gt: booking.checkIn },
+          checkIn: { lt: b.checkOut },
+          checkOut: { gt: b.checkIn },
         },
       });
 
       if (conflicting) {
         await tx.booking.update({
-          where: { id: booking.id },
+          where: { id: b.id },
           data: { status: 'CANCELLED', cancelReason: 'Availability conflict during payment processing' },
         });
-        throw new AppError('Sorry, the cottage was booked by someone else. Payment will be refunded.', 409);
+
+        try {
+          await paymentService.refundPayment(paymentData.paymentId, b.finalAmount);
+        } catch (refundError: any) {
+          console.error('Refund failed for booking conflict:', b.bookingRef, refundError?.message);
+        }
+
+        throw new AppError('Sorry, the cottage was booked by someone else. Your payment has been refunded.', 409);
       }
 
       await tx.booking.update({
-        where: { id: booking.id },
+        where: { id: b.id },
         data: { status: 'CONFIRMED', paymentStatus: 'PAID' },
       });
 
@@ -232,25 +244,49 @@ export class BookingService {
           orderId: paymentData.orderId,
           paymentId: paymentData.paymentId,
           signature: paymentData.signature,
-          amount: booking.finalAmount,
+          amount: b.finalAmount,
           status: 'PAID',
           gateway: paymentData.gateway as any,
           method: paymentData.method,
         },
       });
 
-      await emailService.sendBookingConfirmation(
-        booking.guest.email || 'guest@vedara.com',
-        booking.bookingRef,
-        booking.guest.name,
-        booking.cottage.name,
-        booking.checkIn,
-        booking.checkOut,
-        booking.finalAmount
-      );
-
-      return { ...booking, status: 'CONFIRMED' };
+      return b;
     });
+
+    // Send notifications outside transaction
+    emailService.sendBookingConfirmation(
+      booking.guest.email || 'guest@vedara.com',
+      booking.bookingRef,
+      booking.guest.name,
+      booking.cottage.name,
+      booking.checkIn,
+      booking.checkOut,
+      booking.finalAmount
+    ).catch(() => {});
+
+    emailService.sendAdminBookingAlert(
+      booking.bookingRef,
+      booking.guest.name,
+      booking.guest.email || '',
+      booking.guest.phone || '',
+      booking.cottage.name,
+      booking.checkIn,
+      booking.checkOut,
+      booking.finalAmount
+    ).catch(() => {});
+
+    whatsappService.sendBookingAlert({
+      bookingRef: booking.bookingRef,
+      guestName: booking.guest.name,
+      guestPhone: booking.guest.phone || 'N/A',
+      cottageName: booking.cottage.name,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      amount: booking.finalAmount,
+    }).catch(() => {});
+
+    return { ...booking, status: 'CONFIRMED' };
   }
 
   async getAvailableCottages(checkIn: Date, checkOut: Date) {
@@ -330,6 +366,72 @@ export class BookingService {
     return calendar;
   }
 
+  async approveBooking(bookingId: string, approvedBy?: string) {
+    const booking = await prisma.$transaction(async (tx) => {
+      const b = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: { guest: true, cottage: true },
+      });
+
+      if (!b) throw new AppError('Booking not found', 404);
+      if (b.status !== 'PENDING') {
+        throw new AppError('Only pending bookings can be approved', 400);
+      }
+
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: 'CONFIRMED', paymentStatus: 'PAID' },
+      });
+
+      return b;
+    });
+
+    if (booking.guest.email) {
+      emailService.sendBookingApproved(
+        booking.guest.email,
+        booking.bookingRef,
+        booking.guest.name,
+        booking.cottage.name,
+        booking.checkIn,
+        booking.checkOut
+      ).catch(() => {});
+    }
+
+    return { ...booking, status: 'CONFIRMED' };
+  }
+
+  async rejectBooking(bookingId: string, reason?: string) {
+    const booking = await prisma.$transaction(async (tx) => {
+      const b = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: { guest: true, cottage: true },
+      });
+
+      if (!b) throw new AppError('Booking not found', 404);
+      if (b.status !== 'PENDING') {
+        throw new AppError('Only pending bookings can be rejected', 400);
+      }
+
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: 'CANCELLED', cancelledAt: new Date(), cancelReason: reason || 'Rejected by admin' },
+      });
+
+      return b;
+    });
+
+    if (booking.guest.email) {
+      emailService.sendBookingRejected(
+        booking.guest.email,
+        booking.bookingRef,
+        booking.guest.name,
+        reason
+      ).catch(() => {});
+    }
+
+    return { ...booking, status: 'CANCELLED' };
+  }
+
   async cancelBooking(bookingId: string, reason?: string) {
     const booking = await prisma.booking.update({
       where: { id: bookingId },
@@ -344,6 +446,12 @@ export class BookingService {
         booking.guest.name
       );
     }
+
+    await whatsappService.sendCancellationAlert(
+      booking.bookingRef,
+      booking.guest.name,
+      booking.cottage.name
+    );
 
     return booking;
   }
@@ -392,6 +500,32 @@ export class BookingService {
     ]);
 
     return { bookings, total, page: params.page, totalPages: Math.ceil(total / params.limit) };
+  }
+
+  async updateBookingStatus(bookingId: string, status: string) {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { guest: true, cottage: true },
+    });
+
+    if (!booking) throw new AppError('Booking not found', 404);
+
+    const validTransitions: Record<string, string[]> = {
+      CONFIRMED: ['CHECKED_IN'],
+      CHECKED_IN: ['CHECKED_OUT'],
+    };
+
+    if (!validTransitions[booking.status]?.includes(status)) {
+      throw new AppError(`Cannot transition from ${booking.status} to ${status}`, 400);
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: status as any },
+      include: { guest: true, cottage: true },
+    });
+
+    return updated;
   }
 }
 

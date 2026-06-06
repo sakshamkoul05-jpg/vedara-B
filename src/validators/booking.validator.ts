@@ -8,11 +8,13 @@ export const createBookingSchema = z.object({
     cottageId: z.string().min(1, 'Cottage ID is required'),
     checkIn: z.string().min(1, 'Check-in date is required'),
     checkOut: z.string().min(1, 'Check-out date is required'),
-    adults: z.number().int().min(1).default(2),
-    children: z.number().int().min(0).default(0),
+    adults: z.union([z.number(), z.string()]).optional().default(2),
+    children: z.union([z.number(), z.string()]).optional().default(0),
     specialRequests: z.string().optional(),
     source: z.string().optional(),
-    couponCode: z.string().optional(),
+    couponCode: z.string().nullable().optional(),
+    idProof: z.string().optional(),
+    address: z.string().optional(),
   }),
 });
 

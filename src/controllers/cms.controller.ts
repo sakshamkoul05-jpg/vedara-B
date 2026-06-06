@@ -200,4 +200,81 @@ export const cmsController = {
       res.json({ success: true, data: users });
     } catch (error) { next(error); }
   },
+
+  // Staff
+  async getStaff(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { status, page, limit } = req.query;
+      const result = await cmsService.getStaff({
+        status: status as string,
+        page: parseInt(page as string) || 1,
+        limit: parseInt(limit as string) || 50,
+      });
+      res.json({ success: true, ...result });
+    } catch (error) { next(error); }
+  },
+
+  async createStaff(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const staff = await cmsService.createStaff(req.body);
+      res.status(201).json({ success: true, data: staff });
+    } catch (error) { next(error); }
+  },
+
+  async updateStaff(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const staff = await cmsService.updateStaff(req.params.id as string, req.body);
+      res.json({ success: true, data: staff });
+    } catch (error) { next(error); }
+  },
+
+  async fireStaff(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const staff = await cmsService.fireStaff(req.params.id as string);
+      res.json({ success: true, data: staff });
+    } catch (error) { next(error); }
+  },
+
+  async hireStaff(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const staff = await cmsService.hireStaff(req.params.id as string);
+      res.json({ success: true, data: staff });
+    } catch (error) { next(error); }
+  },
+
+  async deleteStaff(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await cmsService.deleteStaff(req.params.id as string);
+      res.json({ success: true, message: 'Deleted' });
+    } catch (error) { next(error); }
+  },
+
+  // Packages
+  async getPackages(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const packages = await cmsService.getPackages();
+      res.json({ success: true, data: packages });
+    } catch (error) { next(error); }
+  },
+
+  async createPackage(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const pkg = await cmsService.createPackage(req.body);
+      res.status(201).json({ success: true, data: pkg });
+    } catch (error) { next(error); }
+  },
+
+  async updatePackage(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const pkg = await cmsService.updatePackage(req.params.id as string, req.body);
+      res.json({ success: true, data: pkg });
+    } catch (error) { next(error); }
+  },
+
+  async deletePackage(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await cmsService.deletePackage(req.params.id as string);
+      res.json({ success: true, message: 'Deleted' });
+    } catch (error) { next(error); }
+  },
 };

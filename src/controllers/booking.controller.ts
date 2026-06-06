@@ -29,8 +29,14 @@ export const bookingController = {
 
   async createBooking(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const { checkIn, checkOut, adults, children, ...rest } = req.body;
+
       const booking = await bookingService.createBooking({
-        ...req.body,
+        ...rest,
+        checkIn: new Date(checkIn),
+        checkOut: new Date(checkOut),
+        adults: parseInt(adults) || 2,
+        children: parseInt(children) || 0,
         userId: req.user?.userId,
         source: req.body.source || 'WEBSITE',
       });
@@ -74,6 +80,21 @@ export const bookingController = {
     } catch (error) { next(error); }
   },
 
+  async approveBooking(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const booking = await bookingService.approveBooking(req.params.id, req.user?.userId);
+      res.json({ success: true, data: booking });
+    } catch (error) { next(error); }
+  },
+
+  async rejectBooking(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { reason } = req.body;
+      const booking = await bookingService.rejectBooking(req.params.id, reason);
+      res.json({ success: true, data: booking });
+    } catch (error) { next(error); }
+  },
+
   async cancelBooking(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { reason } = req.body;
@@ -100,6 +121,17 @@ export const bookingController = {
         search: req.query.search as string,
       });
       res.json({ success: true, ...result });
+    } catch (error) { next(error); }
+  },
+
+  async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { status } = req.body;
+      if (!status) {
+        return res.status(400).json({ success: false, error: 'Status is required' });
+      }
+      const booking = await bookingService.updateBookingStatus(req.params.id, status);
+      res.json({ success: true, data: booking });
     } catch (error) { next(error); }
   },
 };
