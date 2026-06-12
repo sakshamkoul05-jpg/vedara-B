@@ -1,5 +1,14 @@
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 dotenv.config();
+
+function requireEnv(key: string): string {
+  const value = process.env[key];
+  if (!value && process.env.NODE_ENV === 'production') {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+  return value || '';
+}
 
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
@@ -14,15 +23,17 @@ export const config = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
 
+  cookieSecret: process.env.COOKIE_SECRET || crypto.randomBytes(32).toString('hex'),
+
   razorpay: {
-    keyId: process.env.RAZORPAY_KEY_ID || '',
-    keySecret: process.env.RAZORPAY_KEY_SECRET || '',
+    keyId: requireEnv('RAZORPAY_KEY_ID'),
+    keySecret: requireEnv('RAZORPAY_KEY_SECRET'),
   },
 
   cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
-    apiKey: process.env.CLOUDINARY_API_KEY || '',
-    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+    cloudName: requireEnv('CLOUDINARY_CLOUD_NAME'),
+    apiKey: requireEnv('CLOUDINARY_API_KEY'),
+    apiSecret: requireEnv('CLOUDINARY_API_SECRET'),
   },
 
   smtp: {
@@ -34,7 +45,7 @@ export const config = {
   },
 
   groq: {
-    apiKey: process.env.GROQ_API_KEY || '',
+    apiKey: requireEnv('GROQ_API_KEY'),
   },
 
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -43,7 +54,7 @@ export const config = {
 
   whatsapp: {
     apiUrl: process.env.WHATSAPP_API_URL || '',
-    apiKey: process.env.WHATSAPP_API_KEY || '',
+    apiKey: requireEnv('WHATSAPP_API_KEY'),
     toNumber: process.env.WHATSAPP_TO_NUMBER || '919118882242',
   },
 

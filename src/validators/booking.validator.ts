@@ -1,21 +1,28 @@
 import { z } from 'zod';
+import { sanitizedString, phoneSchema, emailSchema, dateSchema, positiveInt } from './index';
 
 export const createBookingSchema = z.object({
   body: z.object({
-    guestName: z.string().min(2, 'Name is required'),
-    guestEmail: z.string().email().optional().or(z.literal('')),
-    guestPhone: z.string().min(5, 'Phone number is required'),
+    guestName: sanitizedString(2, 100),
+    guestEmail: emailSchema.optional().or(z.literal('')),
+    guestPhone: phoneSchema,
     cottageId: z.string().min(1, 'Cottage ID is required'),
-    checkIn: z.string().min(1, 'Check-in date is required'),
-    checkOut: z.string().min(1, 'Check-out date is required'),
-    adults: z.union([z.number(), z.string()]).optional().default(2),
-    children: z.union([z.number(), z.string()]).optional().default(0),
-    specialRequests: z.string().optional(),
+    checkIn: dateSchema,
+    checkOut: dateSchema,
+    adults: positiveInt.optional().default(2),
+    children: positiveInt.optional().default(0),
+    specialRequests: sanitizedString(0, 2000).optional(),
     source: z.string().optional(),
-    couponCode: z.string().nullable().optional(),
-    idProof: z.string().optional(),
-    address: z.string().optional(),
-  }),
+    couponCode: z.string().max(50).nullable().optional(),
+    idProof: sanitizedString(0, 100).optional(),
+    address: sanitizedString(0, 500).optional(),
+  }).refine(
+    (data) => {
+      if (!data.checkIn || !data.checkOut) return true;
+      return new Date(data.checkOut) > new Date(data.checkIn);
+    },
+    { message: 'Check-out must be after check-in', path: ['checkOut'] }
+  ),
 });
 
 export const confirmPaymentSchema = z.object({
@@ -29,6 +36,6 @@ export const confirmPaymentSchema = z.object({
 
 export const cancelBookingSchema = z.object({
   body: z.object({
-    reason: z.string().optional(),
+    reason: sanitizedString(0, 500).optional(),
   }),
 });
