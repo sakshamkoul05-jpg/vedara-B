@@ -10,6 +10,7 @@ import paymentRoutes from './payment.routes';
 import uploadRoutes from './upload.routes';
 import chatRoutes from './chat.routes';
 import prisma from '../config/database';
+import { setCsrfCookie } from '../utils/security';
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.use('/payments', paymentRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/chat', chatRoutes);
 
-router.get('/health', (_req, res) => {
+router.get('/health', setCsrfCookie, (_req, res) => {
   res.json({ success: true, message: 'Vedara Retreat API is running', timestamp: new Date().toISOString() });
 });
 

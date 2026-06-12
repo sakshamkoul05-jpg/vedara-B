@@ -10,18 +10,28 @@ const prisma = new PrismaClient();
 
 const authenticateSocket = (socket: Socket, next: (err?: Error) => void) => {
   const token = socket.handshake.auth?.token || socket.handshake.query?.token;
-  if (socket.rooms.has('admin') || socket.rooms.has('kitchen')) {
-    if (!token) {
-      return next(new Error('Authentication required for admin/kitchen channels'));
-    }
+  if (token) {
     try {
       const decoded = jwt.verify(token as string, config.jwt.secret) as JwtPayload;
       (socket as any).user = decoded;
     } catch {
-      return next(new Error('Invalid token'));
+      // Token invalid — user stays unauthenticated
     }
   }
   next();
+};
+
+const requireAuth = (socket: Socket, allowedRoles: string[]): boolean => {
+  const user = (socket as any).user;
+  if (!user) {
+    socket.emit('error', { message: 'Authentication required.' });
+    return false;
+  }
+  if (!allowedRoles.includes(user.role)) {
+    socket.emit('error', { message: 'Insufficient permissions.' });
+    return false;
+  }
+  return true;
 };
 
 export function setupSocket(io: Server) {
@@ -31,20 +41,12 @@ export function setupSocket(io: Server) {
     logger.info('Client connected', { socketId: socket.id });
 
     socket.on('join:kitchen', () => {
-      const user = (socket as any).user;
-      if (!user || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(user.role)) {
-        socket.emit('error', { message: 'Unauthorized: insufficient permissions' });
-        return;
-      }
+      if (!requireAuth(socket, ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'])) return;
       socket.join('kitchen');
     });
 
     socket.on('join:admin', () => {
-      const user = (socket as any).user;
-      if (!user || !['SUPER_ADMIN', 'MANAGER', 'ADMIN'].includes(user.role)) {
-        socket.emit('error', { message: 'Unauthorized: insufficient permissions' });
-        return;
-      }
+      if (!requireAuth(socket, ['SUPER_ADMIN', 'MANAGER', 'ADMIN'])) return;
       socket.join('admin');
     });
 

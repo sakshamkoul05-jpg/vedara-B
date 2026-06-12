@@ -38,8 +38,23 @@ export const csrfProtection = (req: any, res: any, next: any) => {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
   const token = req.headers['x-csrf-token'] || req.headers['xsrf-token'];
   const cookieToken = req.cookies?.csrf_token;
+  if (!token && !cookieToken) return next();
   if (!token || !cookieToken || token !== cookieToken) {
     return res.status(403).json({ success: false, error: 'CSRF token validation failed' });
+  }
+  next();
+};
+
+export const setCsrfCookie = (req: any, res: any, next: any) => {
+  if (!req.cookies?.csrf_token) {
+    const token = crypto.randomBytes(32).toString('hex');
+    res.cookie('csrf_token', token, {
+      httpOnly: false,
+      secure: config.isProd,
+      sameSite: 'strict',
+      maxAge: 86400000,
+      path: '/',
+    });
   }
   next();
 };

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { bookingController } from '../controllers/booking.controller';
 import { authenticate, authorize } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import { bookingLimiter } from '../middleware/rateLimiter';
 import { createBookingSchema, confirmPaymentSchema, cancelBookingSchema } from '../validators/booking.validator';
 
 const router = Router();
@@ -10,8 +11,8 @@ router.get('/availability', bookingController.checkAvailability);
 router.get('/available-cottages', bookingController.getAvailableCottages);
 router.get('/calendar', bookingController.getCalendar);
 
-router.post('/', validate(createBookingSchema), bookingController.createBooking);
-router.post('/confirm-payment', validate(confirmPaymentSchema), bookingController.confirmPayment);
+router.post('/', bookingLimiter, validate(createBookingSchema), bookingController.createBooking);
+router.post('/confirm-payment', bookingLimiter, validate(confirmPaymentSchema), bookingController.confirmPayment);
 
 router.get('/my-bookings', bookingController.getUserBookings);
 

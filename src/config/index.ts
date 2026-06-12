@@ -17,13 +17,13 @@ export const config = {
   isProd: process.env.NODE_ENV === 'production',
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-jwt-secret',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret',
+    secret: requireEnv('JWT_SECRET') || 'dev-jwt-secret',
+    refreshSecret: requireEnv('JWT_REFRESH_SECRET') || 'dev-refresh-secret',
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
 
-  cookieSecret: process.env.COOKIE_SECRET || crypto.randomBytes(32).toString('hex'),
+  cookieSecret: requireEnv('COOKIE_SECRET') || crypto.randomBytes(32).toString('hex'),
 
   razorpay: {
     keyId: requireEnv('RAZORPAY_KEY_ID'),

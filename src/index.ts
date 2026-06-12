@@ -26,7 +26,7 @@ const io = new Server(httpServer, {
   cors: {
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-      callback(null, true);
+      callback(new Error('Not allowed by CORS'));
     },
     methods: ['GET', 'POST'],
   },
