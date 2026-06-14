@@ -1,5 +1,39 @@
 import rateLimit from 'express-rate-limit';
 import { config } from '../config';
+import { getRedis } from '../utils/cache';
+
+function createRedisStore(redis: ReturnType<typeof getRedis>, prefix: string) {
+  return {
+    increment: async (key: string, windowMs: number) => {
+      const fullKey = `${prefix}:${key}`;
+      const redis = getRedis();
+      if (!redis) return { totalHits: 0, resetTime: Date.now() + windowMs };
+
+      try {
+        const current = await redis.incr(fullKey);
+        if (current === 1) {
+          await redis.pexpire(fullKey, windowMs);
+        }
+        const ttl = await redis.pttl(fullKey);
+        return { totalHits: current, resetTime: Date.now() + ttl };
+      } catch {
+        return { totalHits: 0, resetTime: Date.now() + windowMs };
+      }
+    },
+    decrement: async (key: string) => {
+      const redis = getRedis();
+      if (!redis) return;
+      try { await redis.decr(`${prefix}:${key}`); } catch {}
+    },
+    resetKey: async (key: string) => {
+      const redis = getRedis();
+      if (!redis) return;
+      try { await redis.del(`${prefix}:${key}`); } catch {}
+    },
+  };
+}
+
+const redisStore = getRedis() ? createRedisStore(getRedis(), 'rl') : undefined;
 
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -7,6 +41,7 @@ export const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests, please try again later.' },
+  ...(redisStore ? { store: { increment: redisStore.increment, decrement: redisStore.decrement, resetKey: redisStore.resetKey } as any } : {}),
 });
 
 export const authLimiter = rateLimit({

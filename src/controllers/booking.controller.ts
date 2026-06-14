@@ -52,7 +52,7 @@ export const bookingController = {
 
   async confirmPayment(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { bookingId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+      const { bookingId, bookingRef, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
 
       const valid = paymentService.verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature);
       if (!valid) {
@@ -106,6 +106,9 @@ export const bookingController = {
   async getUserBookings(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { phone, email } = req.query;
+      if (!phone && !email) {
+        return res.status(400).json({ success: false, error: 'Phone or email is required to look up bookings.' });
+      }
       const bookings = await bookingService.getUserBookings(phone as string, email as string);
       res.json({ success: true, data: bookings });
     } catch (error) { next(error); }

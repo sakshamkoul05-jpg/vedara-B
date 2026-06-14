@@ -8,6 +8,14 @@ import { validatePassword } from '../utils/security';
 import { recordFailedAttempt, resetAttempts } from '../middleware/accountLockout';
 import { logger } from '../utils/logger';
 
+async function hashToken(token: string): Promise<string> {
+  return bcrypt.hash(token, 10);
+}
+
+async function compareToken(raw: string, hashed: string): Promise<boolean> {
+  return bcrypt.compare(raw, hashed);
+}
+
 export class AuthService {
   async login(email: string, password: string) {
     const normalizedEmail = email.toLowerCase().trim();
@@ -56,7 +64,7 @@ export class AuthService {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { refreshToken, lastLoginAt: new Date() },
+      data: { refreshToken: await hashToken(refreshToken), lastLoginAt: new Date() },
     });
 
     logger.info('Successful login', { userId: user.id, role: user.role });
@@ -85,7 +93,7 @@ export class AuthService {
 
       const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
 
-      if (!user || !user.isActive || user.refreshToken !== refreshToken) {
+      if (!user || !user.isActive || !user.refreshToken || !(await compareToken(refreshToken, user.refreshToken))) {
         throw new AppError('Invalid refresh token.', 401);
       }
 
@@ -111,7 +119,7 @@ export class AuthService {
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { refreshToken: newRefreshToken },
+        data: { refreshToken: await hashToken(newRefreshToken) },
       });
 
       return { accessToken: newAccessToken, refreshToken: newRefreshToken };

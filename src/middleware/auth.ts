@@ -3,10 +3,14 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import { AuthRequest, JwtPayload } from '../types';
 import { logger } from '../utils/logger';
+import { cacheSetHas, cacheSetAdd } from '../utils/cache';
 
-const tokenBlacklist = new Set<string>();
+const TOKEN_BLACKLIST_KEY = 'token:blacklist';
+const TOKEN_BLACKLIST_TTL = 7 * 24 * 60 * 60;
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
+const memoryBlacklist = new Set<string>();
+
+export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
@@ -16,7 +20,8 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
     const token = authHeader.split(' ')[1];
 
-    if (tokenBlacklist.has(token)) {
+    const isBlacklisted = (await cacheSetHas(TOKEN_BLACKLIST_KEY, token)) || memoryBlacklist.has(token);
+    if (isBlacklisted) {
       res.status(401).json({ success: false, error: 'Token has been revoked.' });
       return;
     }
@@ -60,12 +65,13 @@ export const authorize = (...roles: string[]) => {
   };
 };
 
-export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
+export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
-      if (!tokenBlacklist.has(token)) {
+      const isBlacklisted = (await cacheSetHas(TOKEN_BLACKLIST_KEY, token)) || memoryBlacklist.has(token);
+      if (!isBlacklisted) {
         const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
         if (decoded.type === 'access') {
           req.user = decoded;
@@ -78,14 +84,15 @@ export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction
   next();
 };
 
-export const invalidateToken = (token: string): void => {
-  tokenBlacklist.add(token);
-  if (tokenBlacklist.size > 10000) {
-    const iterator = tokenBlacklist.values();
+export const invalidateToken = async (token: string): Promise<void> => {
+  memoryBlacklist.add(token);
+  await cacheSetAdd(TOKEN_BLACKLIST_KEY, token).catch(() => {});
+  if (memoryBlacklist.size > 10000) {
+    const iterator = memoryBlacklist.values();
     for (let i = 0; i < 1000; i++) {
       const value = iterator.next();
       if (value.done) break;
-      tokenBlacklist.delete(value.value);
+      memoryBlacklist.delete(value.value);
     }
   }
 };
