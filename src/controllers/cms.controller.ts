@@ -57,9 +57,14 @@ export const cmsController = {
 
   async updateCottage(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const allowedFields = ['name', 'slug', 'description', 'shortDesc', 'pricePerNight', 'capacity', 'bedrooms', 'bathrooms', 'size', 'category', 'amenities', 'images', 'heaterCharge', 'isActive', 'sortOrder'];
+      const data: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) data[key] = req.body[key];
+      }
       const cottage = await prisma.cottage.update({
         where: { id: req.params.id as string },
-        data: req.body,
+        data,
       });
       res.json({ success: true, data: cottage });
     } catch (error) { next(error); }
@@ -81,7 +86,12 @@ export const cmsController = {
 
   async updateTestimonial(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const testimonial = await cmsService.updateTestimonial(req.params.id as string, req.body);
+      const allowedFields = ['name', 'content', 'rating', 'image', 'isVisible', 'sortOrder'];
+      const data: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) data[key] = req.body[key];
+      }
+      const testimonial = await cmsService.updateTestimonial(req.params.id as string, data);
       res.json({ success: true, data: testimonial });
     } catch (error) { next(error); }
   },
@@ -109,7 +119,12 @@ export const cmsController = {
 
   async updateFAQ(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const faq = await cmsService.updateFAQ(req.params.id as string, req.body);
+      const allowedFields = ['question', 'answer', 'category', 'isActive', 'sortOrder'];
+      const data: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) data[key] = req.body[key];
+      }
+      const faq = await cmsService.updateFAQ(req.params.id as string, data);
       res.json({ success: true, data: faq });
     } catch (error) { next(error); }
   },
@@ -160,7 +175,12 @@ export const cmsController = {
 
   async updateCoupon(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const coupon = await cmsService.updateCoupon(req.params.id as string, req.body);
+      const allowedFields = ['code', 'description', 'discountType', 'discountValue', 'minAmount', 'maxUsage', 'maxUsesPerUser', 'voucherType', 'isActive', 'expiresAt'];
+      const data: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) data[key] = req.body[key];
+      }
+      const coupon = await cmsService.updateCoupon(req.params.id as string, data);
       res.json({ success: true, data: coupon });
     } catch (error) { next(error); }
   },
@@ -223,7 +243,12 @@ export const cmsController = {
 
   async updateStaff(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const staff = await cmsService.updateStaff(req.params.id as string, req.body);
+      const allowedFields = ['name', 'phone', 'role', 'salary', 'address', 'photo', 'status', 'employeeId'];
+      const data: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) data[key] = req.body[key];
+      }
+      const staff = await cmsService.updateStaff(req.params.id as string, data);
       res.json({ success: true, data: staff });
     } catch (error) { next(error); }
   },
@@ -266,7 +291,12 @@ export const cmsController = {
 
   async updatePackage(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const pkg = await cmsService.updatePackage(req.params.id as string, req.body);
+      const allowedFields = ['title', 'description', 'image', 'link', 'startDate', 'endDate', 'isActive', 'sortOrder'];
+      const data: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) data[key] = req.body[key];
+      }
+      const pkg = await cmsService.updatePackage(req.params.id as string, data);
       res.json({ success: true, data: pkg });
     } catch (error) { next(error); }
   },

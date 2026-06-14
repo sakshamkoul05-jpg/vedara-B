@@ -17,7 +17,7 @@ export const createUserSchema = z.object({
       .regex(/[a-z]/, 'Must contain a lowercase letter')
       .regex(/[0-9]/, 'Must contain a number')
       .regex(/[^A-Za-z0-9]/, 'Must contain a special character'),
-    role: z.enum(['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'ADMIN', 'STAFF']),
+    role: z.enum(['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'CAFE_STAFF']),
     phone: z.string().regex(/^[\d\s+\-()]{7,20}$/, 'Invalid phone').optional().or(z.literal('')),
   }),
 });
@@ -26,7 +26,7 @@ export const updateUserSchema = z.object({
   body: z.object({
     name: sanitizedString(2, 100).optional(),
     phone: z.string().regex(/^[\d\s+\-()]{7,20}$/, 'Invalid phone').optional().or(z.literal('')),
-    role: z.enum(['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'ADMIN', 'STAFF']).optional(),
+    role: z.enum(['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'CAFE_STAFF']).optional(),
     isActive: z.boolean().optional(),
   }),
 });

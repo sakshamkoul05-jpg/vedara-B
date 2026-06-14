@@ -58,7 +58,12 @@ export const cafeController = {
 
   async updateItem(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const item = await cafeService.updateItem(req.params.id as string, req.body);
+      const allowedFields = ['name', 'description', 'price', 'image', 'isAvailable', 'isVegetarian', 'sortOrder', 'categoryId'];
+      const data: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) data[key] = req.body[key];
+      }
+      const item = await cafeService.updateItem(req.params.id as string, data);
       res.json({ success: true, data: item });
     } catch (error) { next(error); }
   },
@@ -87,7 +92,7 @@ export const cafeController = {
 
   async getSalesChart(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const days = parseInt(req.query.days as string) || 7;
+      const days = Math.min(parseInt(req.query.days as string) || 7, 90);
       const data = await cafeService.getSalesChart(days);
       res.json({ success: true, data });
     } catch (error) { next(error); }

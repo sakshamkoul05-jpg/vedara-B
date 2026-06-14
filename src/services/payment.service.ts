@@ -32,7 +32,8 @@ class PaymentService {
       .createHmac('sha256', config.razorpay.keySecret)
       .update(body)
       .digest('hex');
-    return expectedSignature === signature;
+    if (expectedSignature.length !== signature.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature));
   }
 
   async getPaymentDetails(paymentId: string) {
