@@ -9,6 +9,15 @@ import contactRoutes from './contact.routes';
 import paymentRoutes from './payment.routes';
 import uploadRoutes from './upload.routes';
 import chatRoutes from './chat.routes';
+import propertyRoutes from './property.routes';
+import guestCrmRoutes from './guestCrm.routes';
+import dynamicPricingRoutes from './dynamicPricing.routes';
+import staffScheduleRoutes from './staffSchedule.routes';
+import cafeInventoryRoutes from './cafeInventory.routes';
+import reviewRoutes from './review.routes';
+import webhookRoutes from './webhook.routes';
+import documentRoutes from './document.routes';
+import notificationRoutes from './notification.routes';
 import prisma from '../config/database';
 import { setCsrfCookie } from '../utils/security';
 
@@ -24,6 +33,15 @@ router.use('/contact', contactRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/chat', chatRoutes);
+router.use('/properties', propertyRoutes);
+router.use('/guests', guestCrmRoutes);
+router.use('/pricing', dynamicPricingRoutes);
+router.use('/staff-schedule', staffScheduleRoutes);
+router.use('/inventory', cafeInventoryRoutes);
+router.use('/reviews', reviewRoutes);
+router.use('/webhooks', webhookRoutes);
+router.use('/documents', documentRoutes);
+router.use('/notifications', notificationRoutes);
 
 router.get('/health', setCsrfCookie, (_req, res) => {
   res.json({ success: true, message: 'Vedara Retreat API is running', timestamp: new Date().toISOString() });

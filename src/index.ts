@@ -8,6 +8,7 @@ import { config } from './config';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { csrfProtection } from './utils/security';
 import { globalLimiter, apiLimiter } from './middleware/rateLimiter';
+import { setupSwagger } from './config/swagger';
 import routes from './routes';
 import { setupSocket } from './sockets';
 import { startCronJobs } from './jobs';
@@ -68,6 +69,8 @@ app.use('/api', apiLimiter);
 app.use('/api', csrfProtection);
 
 app.use('/api', routes);
+
+setupSwagger(app);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

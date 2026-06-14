@@ -76,10 +76,12 @@ model Guest {
   updatedAt DateTime  @updatedAt
 
   bookings  Booking[]
+  profile   GuestProfile?
 }
 
 model Cottage {
   id            String   @id @default(cuid())
+  propertyId    String?
   name          String
   slug          String   @unique
   description   String
@@ -98,9 +100,11 @@ model Cottage {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  bookings          Booking[]
-  blockedDates      BlockedDate[]
-  seasonalPricings  SeasonalPricing[]
+  property      Property? @relation(fields: [propertyId], references: [id])
+  bookings      Booking[]
+  blockedDates  BlockedDate[]
+  seasonalPricings SeasonalPricing[]
+  reviews       Review[]
 }
 
 model SeasonalPricing {
@@ -124,6 +128,7 @@ enum StaffStatus {
 
 model Staff {
   id            String      @id @default(cuid())
+  propertyId    String?
   name          String
   phone         String
   employeeId    String      @unique
@@ -136,6 +141,10 @@ model Staff {
   firedAt       DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+
+  property      Property?   @relation(fields: [propertyId], references: [id])
+  shifts        StaffShift[]
+  attendance    StaffAttendance[]
 }
 
 model Package {
@@ -183,6 +192,7 @@ model Coupon {
 
 model Booking {
   id              String         @id @default(cuid())
+  propertyId      String?
   bookingRef      String         @unique
   guestId         String
   cottageId       String
@@ -208,10 +218,12 @@ model Booking {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
+  property        Property?      @relation(fields: [propertyId], references: [id])
   guest           Guest          @relation(fields: [guestId], references: [id])
   cottage         Cottage        @relation(fields: [cottageId], references: [id])
   user            User?          @relation(fields: [userId], references: [id])
   payment         Payment?
+  reviews         Review[]
 }
 
 model Payment {
@@ -401,4 +413,267 @@ model FAQ {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// SaaS FEATURES - Multi-Property, CRM, Loyalty, etc.
+// ==========================================
+
+model Property {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  address     String?
+  phone       String?
+  email       String?
+  timezone    String   @default("Asia/Kolkata")
+  currency    String   @default("INR")
+  logo        String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cottages    Cottage[]
+  staff       Staff[]
+  bookings    Booking[]
+}
+
+// Enhanced Guest CRM
+model GuestProfile {
+  id              String   @id @default(cuid())
+  guestId         String   @unique
+  dateOfBirth     DateTime?
+  nationality     String?
+  language        String   @default("en")
+  idType          String?
+  idNumber        String?
+  emergencyContact String?
+  emergencyPhone  String?
+  preferences     Json     @default("{}")
+  dietaryRestrictions String?
+  specialDates    Json     @default("[]")
+  notes           String?
+  totalStays      Int      @default(0)
+  totalSpent      Float    @default(0)
+  loyaltyPoints   Int      @default(0)
+  tier            String   @default("BRONZE")
+  referredBy      String?
+  referralCode    String?  @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  guest           Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  reviews         Review[]
+  loyaltyTransactions LoyaltyTransaction[]
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  guestId     String
+  bookingId   String?
+  cottageId   String?
+  rating      Int
+  title       String?
+  content     String?
+  pros        String?
+  cons        String?
+  source      String   @default("WEBSITE")
+  isVerified  Boolean  @default(false)
+  isVisible   Boolean  @default(true)
+  adminReply  String?
+  repliedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guestProfile GuestProfile @relation(fields: [guestId], references: [guestId])
+  booking      Booking?     @relation(fields: [bookingId], references: [id])
+  cottage      Cottage?     @relation(fields: [cottageId], references: [id])
+}
+
+// Loyalty & Referral Program
+model LoyaltyTransaction {
+  id          String   @id @default(cuid())
+  guestId     String
+  points      Int
+  type        String
+  description String?
+  bookingId   String?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  guestProfile GuestProfile @relation(fields: [guestId], references: [guestId])
+
+  @@index([guestId])
+}
+
+model Referral {
+  id            String   @id @default(cuid())
+  referrerCode  String
+  refereeEmail  String
+  refereeName   String?
+  status        String   @default("PENDING")
+  rewardPoints  Int      @default(500)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([referrerCode])
+  @@index([refereeEmail])
+}
+
+// Dynamic Pricing
+model PricingRule {
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  dayOfWeek     Int?
+  startDate     DateTime?
+  endDate       DateTime?
+  multiplier    Float    @default(1.0)
+  minStay       Int?
+  maxStay       Int?
+  isActive      Boolean  @default(true)
+  priority      Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([type, isActive])
+}
+
+// Staff Scheduling
+model StaffShift {
+  id          String   @id @default(cuid())
+  staffId     String
+  date        DateTime
+  startTime   String
+  endTime     String
+  shiftType   String   @default("DAY")
+  status      String   @default("SCHEDULED")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  staff       Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId, date])
+}
+
+model StaffAttendance {
+  id          String   @id @default(cuid())
+  staffId     String
+  date        DateTime
+  checkIn     DateTime?
+  checkOut    DateTime?
+  status      String   @default("PRESENT")
+  hoursWorked Float?
+  overtime    Float?   @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  staff       Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId, date])
+  @@unique([staffId, date])
+}
+
+// Cafe Inventory
+model CafeInventory {
+  id            String   @id @default(cuid())
+  name          String
+  category      String
+  quantity      Float    @default(0)
+  unit          String   @default("kg")
+  minStock      Float    @default(10)
+  maxStock      Float?
+  costPerUnit   Float?
+  supplier      String?
+  lastRestocked DateTime?
+  expiresAt     DateTime?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  logs          CafeInventoryLog[]
+
+  @@index([category, isActive])
+}
+
+model CafeInventoryLog {
+  id            String   @id @default(cuid())
+  inventoryId   String
+  type          String
+  quantity      Float
+  reason        String?
+  performedBy   String?
+  createdAt     DateTime @default(now())
+
+  inventory     CafeInventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId, createdAt])
+}
+
+// Webhook System
+model Webhook {
+  id          String   @id @default(cuid())
+  url         String
+  events      Json
+  secret      String?
+  isActive    Boolean  @default(true)
+  lastTriggered DateTime?
+  failCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  deliveries  WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id          String   @id @default(cuid())
+  webhookId   String
+  event       String
+  payload     Json
+  response    Json?
+  statusCode  Int?
+  success     Boolean  @default(false)
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+  deliveredAt DateTime?
+
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId, createdAt])
+}
+
+// Document Management
+model Document {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  fileUrl     String
+  fileType    String
+  fileSize    Int?
+  description String?
+  expiresAt   DateTime?
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}
+
+// Server-Side Notifications
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String?
+  type        String
+  title       String
+  message     String
+  data        Json?
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([createdAt])
 }
