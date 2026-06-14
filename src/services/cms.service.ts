@@ -276,8 +276,8 @@ export class CmsService {
     return prisma.staff.create({ data: { ...data, status: 'ACTIVE', hiredAt: new Date() } });
   }
 
-  async updateStaff(id: string, data: Partial<{ name: string; phone: string; role: string; salary: number; address: string; photo: string; status: string; employeeId: string }>) {
-    return prisma.staff.update({ where: { id }, data });
+  async updateStaff(id: string, data: Partial<{ name: string; phone: string; role: string; salary: number; address: string; photo: string; status: 'ACTIVE' | 'FIRED'; employeeId: string }>) {
+    return prisma.staff.update({ where: { id }, data: data as any });
   }
 
   async fireStaff(id: string) {
