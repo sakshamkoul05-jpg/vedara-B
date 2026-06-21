@@ -86,11 +86,13 @@ Sip morning coffee on your private love seat, or step onto your attic balcony—
 
 Space & Comfort: 552 sq. ft. (51 sq. m.) Duplex Layout | Cozy Attic Space | Private Love Seat & Coffee Table | Blackout Curtains
 
+Capacity: Sleeps up to 4 guests across 2 luxurious King Size Beds equipped with Warm Quilts (Additional blankets available on request; paid extra bed option available)
+
 The Luxury Touch: Private Premium Jacuzzi | Attic-Linked Yoga & Meditation Balcony | Second Sitting Balcony | Complimentary Slippers & Luxury Toiletries
 
 Refreshments: In-room Electric Kettle with a selection of Premium Complimentary Tea & Coffee
 
-Amenities: Panoramic Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping, Chargeable Laundry.`,
+Amenities: Panoramic Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (provided complimentary during winter season), Room Service, Housekeeping, and Chargeable Laundry Services.`,
       pricePerNight: 12000,
       capacity: 4,
       bedrooms: 1,
@@ -120,11 +122,13 @@ Wake up early, brew a warm cup of coffee, and head up to the attic balcony—the
 
 Space & Comfort: 566 sq. ft. (52 sq. m.) Max-Space Duplex | Signature Wooden Attic | Intimate Love Seat Lounge | Blackout Curtains
 
+Capacity: Sleeps up to 4 guests across 2 King Size Beds equipped with Warm Quilts (Additional blankets available on request; paid extra bed option available)
+
 The Luxury Touch: Private Premium Jacuzzi | Attic-Linked Yoga & Meditation Balcony | Second Sitting Balcony | Complimentary Slippers & Luxury Toiletries
 
 Refreshments: In-room Electric Kettle with a selection of Premium Complimentary Tea & Coffee
 
-Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping, Chargeable Laundry.`,
+Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Internet, Room Heater (provided complimentary during winter season), Room Service, Housekeeping, and Chargeable Laundry Services.`,
       pricePerNight: 12500,
       capacity: 4,
       bedrooms: 1,
@@ -154,11 +158,13 @@ Featuring a gorgeous structural attic, a dual-balcony setup, and an attic balcon
 
 Space & Comfort: 556 sq. ft. (51 sq. m.) Balanced Duplex Layout | Charming Attic Nook | Love Seat & Coffee Table Set | Blackout Curtains
 
+Capacity: Sleeps up to 4 guests across 2 King Size Beds equipped with Warm Quilts (Additional blankets available on request; paid extra bed option available)
+
 The Luxury Touch: Deep-Soak Bath Tub | Attic-Linked Yoga & Meditation Balcony | Second Sitting Balcony | Complimentary Slippers & Luxury Toiletries
 
 Refreshments: In-room Electric Kettle with a selection of Premium Complimentary Tea & Coffee
 
-Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping, Chargeable Laundry.`,
+Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (provided complimentary during winter season), Room Service, Housekeeping, and Chargeable Laundry Services.`,
       pricePerNight: 11000,
       capacity: 4,
       bedrooms: 1,
@@ -182,22 +188,25 @@ Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Int
       shortDesc: 'Intimate Mountain View Suite — a melody of mountain quietude',
       description: `A Melody of Mountain Quietude
 
-Named after the iconic whistling bird of the Himalayas, this beautifully appointed 270 sq. ft. cottage is a retreat for couples and solo seekers. Whistling Thrush combines cozy mountain warmth with high-end comfort, featuring a plush king-size bed wrapped in heavy, mountain-grade quilts.
+Named after the iconic whistling bird of the Himalayas, this beautifully appointed 270 sq. ft. cottage is a sanctuary for couples and solo seekers. Whistling Thrush combines cozy mountain warmth with high-end comfort, featuring a plush king-size bed wrapped in heavy, mountain-grade quilts.
 
 Wake up to unobstructed valley views, brew a fresh cup of tea, and sit out on your balcony using the two outdoor chairs and small table. Inside, a dedicated seating area with two single chairs and a coffee table provides the perfect nook to unwind. After dusk, pull the premium blackout curtains, and let the peaceful sounds of the Ghiyagi night lull you to sleep.
 
 Space & Comfort: 270 sq. ft. (25 sq. m.) Intimate Layout | Indoor Seating (2 Single Chairs & Coffee Table) | Blackout Curtains
 
+Capacity: Sleeps up to 2 guests across 1 luxurious King Size Bed (Warm quilts provided; paid extra bed option available)
+
 The Luxury Touch: Private Panoramic Balcony (2 Chairs & Small Table) | Complimentary Room Slippers & Luxury Toiletries
 
 Refreshments: In-room Electric Kettle with a complimentary selection of Tea & Coffee sachets
 
-Amenities: Stunning Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping (Laundry chargeable).`,
+Amenities: Stunning Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (provided complimentary during winter season), Room Service, and Housekeeping (Laundry services available, chargeable).`,
       pricePerNight: 7500,
       capacity: 2,
       bedrooms: 1,
       bathrooms: 1,
       size: 270,
+      heaterCharge: 500,
       amenities: JSON.stringify([
         '1 King Size Bed', 'Private Panoramic Balcony',
         'Indoor Seating (2 Chairs & Table)', 'Blackout Curtains',
@@ -221,11 +230,13 @@ Spend your afternoons reading out on the balcony with its dedicated two-chair se
 
 Space & Comfort: 270 sq. ft. (25 sq. m.) Intimate Layout | Indoor Seating (2 Single Chairs & Coffee Table) | Blackout Curtains
 
+Capacity: Sleeps up to 2 guests across 1 luxurious King Size Bed (Additional blankets on request; paid extra bed option available)
+
 The Luxury Touch: Private Panoramic Balcony (2 Chairs & Small Table) | Complimentary Room Slippers & Luxury Toiletries
 
 Refreshments: In-room Electric Kettle with a complimentary selection of Tea & Coffee sachets
 
-Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping (Laundry chargeable).`,
+Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Internet, Room Heater (provided complimentary during winter season), Room Service, and Housekeeping (Laundry services available, chargeable).`,
       pricePerNight: 7500,
       capacity: 2,
       bedrooms: 1,
@@ -255,11 +266,13 @@ Slip into your complimentary room slippers, step onto the balcony to watch the m
 
 Space & Comfort: 270 sq. ft. (25 sq. m.) Workcation Layout | Dedicated Workstation (Study Table & Chair) | Indoor Lounge Seating (2 Single Chairs & Coffee Table) | Blackout Curtains
 
+Capacity: Sleeps up to 2 guests across 1 luxurious King Size Bed (Additional blankets on request; paid extra bed option available)
+
 The Luxury Touch: Private Panoramic Balcony (2 Chairs & Small Table) | Complimentary Room Slippers & Luxury Toiletries
 
 Refreshments: In-room Electric Kettle with a complimentary selection of Tea & Coffee sachets
 
-Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping (Laundry chargeable).`,
+Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Internet, Room Heater (provided complimentary during winter season), Room Service, and Housekeeping (Laundry services available, chargeable).`,
       pricePerNight: 7500,
       capacity: 2,
       bedrooms: 1,
@@ -284,17 +297,19 @@ Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Int
       shortDesc: 'Cozy Alpine Studio — small space, boundless solitude',
       description: `Small Space, Boundless Solitude
 
-Thoughtfully engineered for the solo adventurer, remote writer, or minimalist traveler, The Finch Nook is an intimate 120 sq. ft. alpine retreat. Enwrapped in floor-to-ceiling warm wooden paneling, this room captures the nostalgic essence of a classic mountain cabinette.
+Thoughtfully engineered for the solo adventurer, remote writer, or minimalist traveler, The Finch Nook is an intimate 120 sq. ft. alpine sanctuary. Enwrapped in floor-to-ceiling warm wooden paneling, this room captures the nostalgic essence of a classic mountain cabinette.
 
 Whether you are using the dedicated study desk to pen your next journal entry, brewing a hot cup of coffee, or diving into the plush queen bed after a day of crisp mountain air, this room offers a highly functional, deeply comforting refuge where every square inch is designed with purpose.
 
 Space & Comfort: 120 sq. ft. (11 sq. m.) Intelligent Minimalist Layout | Premium Wooden Paneling | Dedicated Study Desk & Chair | Blackout Curtains
 
+Capacity: Accommodates up to 2 guests across 1 comfortable Queen Size Bed wrapped in Warm Alpine Quilts
+
 Refreshments: In-room Electric Kettle with a selection of Premium Complimentary Tea & Coffee
 
 The Hospitality Touch: Complimentary Room Slippers & Luxury Toiletries Included
 
-Amenities: Attached Modern Bathroom, High-Speed Internet, Room Heater (complimentary during winter), Room Service, Housekeeping.`,
+Amenities: Attached Modern Bathroom, High-Speed Internet, Room Heater (provided complimentary during winter season), Room Service, and Housekeeping.`,
       pricePerNight: 5000,
       capacity: 2,
       bedrooms: 1,
