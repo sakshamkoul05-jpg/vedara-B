@@ -17,10 +17,14 @@ import { logger } from './utils/logger';
 const allowedOrigins = [
   config.frontendUrl,
   'https://vedara-f.vercel.app',
-  'https://vedara-f-tau.vercel.app',
-  'https://vedara-qc4atr8c2-sakshamkoul05-jpgs-projects.vercel.app',
-  'https://vedara-2b4rim0kz-sakshamkoul05-jpgs-projects.vercel.app',
 ].filter(Boolean);
+
+function isAllowedOrigin(origin: string): boolean {
+  if (allowedOrigins.includes(origin)) return true;
+  if (/^https:\/\/vedara-f-[a-z0-9]+\.vercel\.app$/.test(origin)) return true;
+  if (/^https:\/\/vedara-[a-z0-9]+-sakshamkoul05-jpgs-projects\.vercel\.app$/.test(origin)) return true;
+  return false;
+}
 
 const app = express();
 app.set('trust proxy', 1);
@@ -29,7 +33,7 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      if (!origin || isAllowedOrigin(origin)) return callback(null, true);
       callback(new Error('Not allowed by CORS'));
     },
     methods: ['GET', 'POST'],
@@ -53,7 +57,7 @@ app.use(helmet({
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin || isAllowedOrigin(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
