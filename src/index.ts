@@ -17,6 +17,7 @@ import { logger } from './utils/logger';
 const allowedOrigins = [
   config.frontendUrl,
   'https://vedara-f.vercel.app',
+  'https://vedara-f-tau.vercel.app',
   'https://vedara-qc4atr8c2-sakshamkoul05-jpgs-projects.vercel.app',
   'https://vedara-2b4rim0kz-sakshamkoul05-jpgs-projects.vercel.app',
 ].filter(Boolean);
