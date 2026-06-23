@@ -18,7 +18,9 @@ router.get('/settings', cmsController.getSettings);
 router.put('/settings', validate(updateSettingSchema), cmsController.updateSetting);
 
 router.get('/cottages', cmsController.getCottages);
+router.post('/cottages', cmsController.createCottage);
 router.put('/cottages/:id', cmsController.updateCottage);
+router.delete('/cottages/:id', cmsController.deleteCottage);
 
 router.get('/gallery', cmsController.getGallery);
 router.post('/gallery', validate(addGallerySchema), cmsController.addGalleryItem);

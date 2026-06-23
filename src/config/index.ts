@@ -1,11 +1,13 @@
 import dotenv from 'dotenv';
-import crypto from 'crypto';
 dotenv.config();
 
 function requireEnv(key: string): string {
   const value = process.env[key];
-  if (!value && process.env.NODE_ENV === 'production') {
-    throw new Error(`Missing required environment variable: ${key}`);
+  if (!value) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+    console.warn(`WARNING: Missing env var ${key} — using insecure dev fallback`);
   }
   return value || '';
 }
@@ -17,13 +19,13 @@ export const config = {
   isProd: process.env.NODE_ENV === 'production',
 
   jwt: {
-    secret: requireEnv('JWT_SECRET') || 'dev-jwt-secret',
-    refreshSecret: requireEnv('JWT_REFRESH_SECRET') || 'dev-refresh-secret',
+    secret: requireEnv('JWT_SECRET'),
+    refreshSecret: requireEnv('JWT_REFRESH_SECRET'),
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
 
-  cookieSecret: requireEnv('COOKIE_SECRET') || crypto.randomBytes(32).toString('hex'),
+  cookieSecret: requireEnv('COOKIE_SECRET'),
 
   razorpay: {
     keyId: requireEnv('RAZORPAY_KEY_ID'),

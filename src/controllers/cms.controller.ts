@@ -70,6 +70,55 @@ export const cmsController = {
     } catch (error) { next(error); }
   },
 
+  async createCottage(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { name, slug, description, shortDesc, pricePerNight, capacity, bedrooms, bathrooms, size, category, amenities, images, heaterCharge, sortOrder } = req.body;
+      if (!name || !slug || !description || pricePerNight === undefined) {
+        return res.status(400).json({ success: false, error: 'Name, slug, description, and price are required' });
+      }
+      const existing = await prisma.cottage.findUnique({ where: { slug } });
+      if (existing) {
+        return res.status(409).json({ success: false, error: 'A cottage with this slug already exists' });
+      }
+      const cottage = await prisma.cottage.create({
+        data: {
+          name,
+          slug,
+          description,
+          shortDesc: shortDesc || '',
+          pricePerNight: parseInt(pricePerNight, 10),
+          capacity: capacity ? parseInt(capacity, 10) : 2,
+          bedrooms: bedrooms ? parseInt(bedrooms, 10) : 1,
+          bathrooms: bathrooms ? parseInt(bathrooms, 10) : 1,
+          size: size ? parseInt(size, 10) : null,
+          category: category || null,
+          amenities: amenities || [],
+          images: images || [],
+          heaterCharge: heaterCharge ? parseInt(heaterCharge, 10) : 500,
+          sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
+        },
+      });
+      res.status(201).json({ success: true, data: cottage });
+    } catch (error) { next(error); }
+  },
+
+  async deleteCottage(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const cottage = await prisma.cottage.findUnique({ where: { id: req.params.id as string } });
+      if (!cottage) {
+        return res.status(404).json({ success: false, error: 'Cottage not found' });
+      }
+      const hasBookings = await prisma.booking.findFirst({
+        where: { cottageId: req.params.id, status: { notIn: ['CANCELLED', 'EXPIRED'] } },
+      });
+      if (hasBookings) {
+        return res.status(409).json({ success: false, error: 'Cannot delete cottage with active bookings. Deactivate it instead.' });
+      }
+      await prisma.cottage.delete({ where: { id: req.params.id as string } });
+      res.json({ success: true, message: 'Cottage deleted' });
+    } catch (error) { next(error); }
+  },
+
   async getTestimonials(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const testimonials = await prisma.testimonial.findMany({ orderBy: { sortOrder: 'asc' } });

@@ -17,6 +17,10 @@ import { logger } from './utils/logger';
 const allowedOrigins = [
   config.frontendUrl,
   'https://vedara-f.vercel.app',
+  'https://www.thevedara.com',
+  'https://thevedara.com',
+  'http://localhost:3000',
+  'http://localhost:5173',
 ].filter(Boolean);
 
 function isAllowedOrigin(origin: string): boolean {
@@ -36,7 +40,8 @@ const io = new Server(httpServer, {
       if (!origin || isAllowedOrigin(origin)) return callback(null, true);
       callback(new Error('Not allowed by CORS'));
     },
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
   },
 });
 

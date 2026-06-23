@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminPassword = await bcrypt.hash('Vedara@2024', 12);
+  const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'ChangeMeInProduction!', 12);
 
   await prisma.user.upsert({
     where: { email: 'vedararetreat@gmail.com' },
@@ -23,7 +23,7 @@ async function main() {
     update: {},
     create: {
       email: 'admin@vedara.com',
-      password: await bcrypt.hash('admin123', 12),
+      password: adminPassword,
       name: 'Vedara Admin (alt)',
       role: 'SUPER_ADMIN',
       phone: '+91-9118882242',
@@ -593,8 +593,6 @@ Amenities: Attached Modern Bathroom, High-Speed Internet, Room Heater (provided 
   });
 
   console.log('Seed data created successfully!');
-  console.log('Admin: admin@vedara.com / admin123');
-  console.log('Manager: manager@vedara.com / admin123');
 }
 
 main()
