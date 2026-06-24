@@ -49,8 +49,8 @@ export const setCsrfCookie = (req: any, res: any, next: any) => {
     const token = crypto.randomBytes(32).toString('hex');
     res.cookie('csrf_token', token, {
       httpOnly: false,
-      secure: config.isProd,
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 86400000,
       path: '/',
     });
