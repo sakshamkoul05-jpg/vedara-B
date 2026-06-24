@@ -98,7 +98,7 @@ Amenities: Panoramic Mountain Views, Attached Modern Bathroom, High-Speed Intern
       bedrooms: 1,
       bathrooms: 1,
       size: 552,
-      heaterCharge: 500,
+      heaterCharge: 600,
       amenities: JSON.stringify([
         '2 King Size Beds', 'Private Jacuzzi', 'Attic Yoga & Meditation Balcony',
         'Second Sitting Balcony', 'Love Seat & Coffee Table', 'Blackout Curtains',
@@ -134,7 +134,7 @@ Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Interne
       bedrooms: 1,
       bathrooms: 1,
       size: 566,
-      heaterCharge: 500,
+      heaterCharge: 600,
       amenities: JSON.stringify([
         '2 King Size Beds', 'Private Jacuzzi', 'Attic Yoga & Meditation Balcony',
         'Second Sitting Balcony', 'Love Seat Lounge', 'Blackout Curtains',
@@ -170,7 +170,7 @@ Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Int
       bedrooms: 1,
       bathrooms: 1,
       size: 556,
-      heaterCharge: 500,
+      heaterCharge: 600,
       amenities: JSON.stringify([
         '2 King Size Beds', 'Deep-Soak Bath Tub', 'Attic Yoga & Meditation Balcony',
         'Second Sitting Balcony', 'Love Seat & Coffee Table', 'Blackout Curtains',
@@ -206,7 +206,7 @@ Amenities: Stunning Mountain Views, Attached Modern Bathroom, High-Speed Interne
       bedrooms: 1,
       bathrooms: 1,
       size: 270,
-      heaterCharge: 500,
+      heaterCharge: 600,
       amenities: JSON.stringify([
         '1 King Size Bed', 'Private Panoramic Balcony',
         'Indoor Seating (2 Chairs & Table)', 'Blackout Curtains',
@@ -242,7 +242,7 @@ Amenities: Sweeping Mountain Views, Attached Luxury Bathroom, High-Speed Interne
       bedrooms: 1,
       bathrooms: 1,
       size: 270,
-      heaterCharge: 500,
+      heaterCharge: 600,
       amenities: JSON.stringify([
         '1 King Size Bed', 'Private Panoramic Balcony',
         'Indoor Seating (2 Chairs & Table)', 'Blackout Curtains',
@@ -278,7 +278,7 @@ Amenities: Unobstructed Mountain Views, Attached Modern Bathroom, High-Speed Int
       bedrooms: 1,
       bathrooms: 1,
       size: 270,
-      heaterCharge: 500,
+      heaterCharge: 600,
       amenities: JSON.stringify([
         '1 King Size Bed', 'Dedicated Workstation (Study Table & Chair)',
         'Private Panoramic Balcony', 'Indoor Lounge Seating (2 Chairs & Table)',
@@ -315,7 +315,7 @@ Amenities: Attached Modern Bathroom, High-Speed Internet, Room Heater (provided 
       bedrooms: 1,
       bathrooms: 1,
       size: 120,
-      heaterCharge: 500,
+      heaterCharge: 600,
       amenities: JSON.stringify([
         '1 Queen Size Bed', 'Dedicated Study Desk & Chair',
         'Premium Wooden Paneling', 'Blackout Curtains',

@@ -94,7 +94,7 @@ model Cottage {
   category      String?
   amenities     Json     @default("[]")
   images        Json     @default("[]")
-  heaterCharge  Int      @default(500)
+  heaterCharge  Int      @default(600)
   isActive      Boolean  @default(true)
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())

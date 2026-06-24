@@ -94,7 +94,7 @@ export const cmsController = {
           category: category || null,
           amenities: amenities || [],
           images: images || [],
-          heaterCharge: heaterCharge ? parseInt(heaterCharge, 10) : 500,
+          heaterCharge: heaterCharge ? parseInt(heaterCharge, 10) : 600,
           sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
         },
       });
