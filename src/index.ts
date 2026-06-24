@@ -6,7 +6,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { config } from './config';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
-import { csrfProtection } from './utils/security';
+import { csrfProtection, setCsrfCookie } from './utils/security';
 import { globalLimiter, apiLimiter } from './middleware/rateLimiter';
 import { setupSwagger } from './config/swagger';
 import routes from './routes';
@@ -78,6 +78,7 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 app.use('/api', globalLimiter);
 app.use('/api', apiLimiter);
+app.use('/api', setCsrfCookie);
 app.use('/api', csrfProtection);
 
 app.use('/api', routes);

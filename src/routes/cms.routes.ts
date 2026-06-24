@@ -1,14 +1,37 @@
 import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
 import { cmsController } from '../controllers/cms.controller';
 import { authenticate, authorize } from '../middleware/auth';
 import { contactController } from '../controllers/contact.controller';
 import { validate } from '../middleware/validate';
 import { updateSettingSchema, addGallerySchema, addTestimonialSchema, addFAQSchema, createCouponSchema } from '../validators/cms.validator';
 
+const prisma = new PrismaClient();
 const router = Router();
 
 router.get('/coupons/active', cmsController.getActiveCoupons);
 router.post('/coupons/validate', cmsController.validateCouponCode);
+
+router.get('/public-settings', async (_req, res) => {
+  try {
+    const settings = await prisma.siteSetting.findMany({
+      where: { key: { in: ['aiPlannerEnabled', 'chatbotEnabled'] } },
+    });
+    const result = settings.reduce((acc: Record<string, string>, s: any) => ({ ...acc, [s.key]: s.value }), {});
+    res.json({ success: true, data: result });
+  } catch {
+    res.json({ success: true, data: {} });
+  }
+});
+
+router.get('/faqs/public', async (_req, res) => {
+  try {
+    const faqs = await prisma.fAQ.findMany({ orderBy: { order: 'asc' } });
+    res.json({ success: true, data: faqs });
+  } catch {
+    res.json({ success: true, data: [] });
+  }
+});
 
 router.use(authenticate, authorize('SUPER_ADMIN', 'MANAGER'));
 
