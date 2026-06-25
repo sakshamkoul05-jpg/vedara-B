@@ -24,9 +24,11 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 function isAllowedOrigin(origin: string): boolean {
+  if (!origin) return true;
   if (allowedOrigins.includes(origin)) return true;
-  if (/^https:\/\/vedara-f-[a-z0-9]+\.vercel\.app$/.test(origin)) return true;
-  if (/^https:\/\/vedara-[a-z0-9]+-sakshamkoul05-jpgs-projects\.vercel\.app$/.test(origin)) return true;
+  if (/^https:\/\/vedara-f-[a-z0-9]+\.vercel\.app$/i.test(origin)) return true;
+  if (/^https:\/\/vedara-[a-z0-9]+-sakshamkoul05-jpgs-projects\.vercel\.app$/i.test(origin)) return true;
+  if (/^https:\/\/vedara-[a-z0-9]+\.vercel\.app$/i.test(origin)) return true;
   return false;
 }
 
