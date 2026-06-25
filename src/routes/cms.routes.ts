@@ -1,12 +1,11 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { cmsController } from '../controllers/cms.controller';
 import { authenticate, authorize } from '../middleware/auth';
 import { contactController } from '../controllers/contact.controller';
 import { validate } from '../middleware/validate';
 import { updateSettingSchema, addGallerySchema, addTestimonialSchema, addFAQSchema, createCouponSchema } from '../validators/cms.validator';
+import prisma from '../config/database';
 
-const prisma = new PrismaClient();
 const router = Router();
 
 router.get('/coupons/active', cmsController.getActiveCoupons);
@@ -26,7 +25,7 @@ router.get('/public-settings', async (_req, res) => {
 
 router.get('/faqs/public', async (_req, res) => {
   try {
-    const faqs = await prisma.fAQ.findMany({ orderBy: { order: 'asc' } });
+    const faqs = await prisma.fAQ.findMany({ orderBy: { sortOrder: 'asc' } });
     res.json({ success: true, data: faqs });
   } catch {
     res.json({ success: true, data: [] });
