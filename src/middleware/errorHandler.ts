@@ -69,7 +69,6 @@ export const errorHandler = (
   res.status(500).json({
     success: false,
     error: 'An unexpected error occurred. Please try again later.',
-    debug: err.message,
   });
 };
 
