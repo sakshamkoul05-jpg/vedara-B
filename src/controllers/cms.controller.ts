@@ -60,14 +60,23 @@ export const cmsController = {
       const allowedFields = ['name', 'slug', 'description', 'shortDesc', 'pricePerNight', 'capacity', 'bedrooms', 'bathrooms', 'size', 'category', 'amenities', 'images', 'heaterCharge', 'isActive', 'sortOrder'];
       const data: Record<string, any> = {};
       for (const key of allowedFields) {
-        if (req.body[key] !== undefined) data[key] = req.body[key];
+        if (req.body[key] !== undefined) {
+          if (key === 'amenities' || key === 'images') {
+            data[key] = Array.isArray(req.body[key]) ? req.body[key] : [];
+          } else {
+            data[key] = req.body[key];
+          }
+        }
       }
       const cottage = await prisma.cottage.update({
         where: { id: req.params.id as string },
         data,
       });
       res.json({ success: true, data: cottage });
-    } catch (error) { next(error); }
+    } catch (error: any) {
+      console.error('Update cottage error:', error?.message || error);
+      next(error);
+    }
   },
 
   async createCottage(req: AuthRequest, res: Response, next: NextFunction) {
@@ -86,20 +95,23 @@ export const cmsController = {
           slug,
           description,
           shortDesc: shortDesc || '',
-          pricePerNight: parseInt(pricePerNight, 10),
-          capacity: capacity ? parseInt(capacity, 10) : 2,
-          bedrooms: bedrooms ? parseInt(bedrooms, 10) : 1,
-          bathrooms: bathrooms ? parseInt(bathrooms, 10) : 1,
-          size: size ? parseInt(size, 10) : null,
+          pricePerNight: parseInt(String(pricePerNight), 10),
+          capacity: capacity ? parseInt(String(capacity), 10) : 2,
+          bedrooms: bedrooms ? parseInt(String(bedrooms), 10) : 1,
+          bathrooms: bathrooms ? parseInt(String(bathrooms), 10) : 1,
+          size: size ? parseInt(String(size), 10) : null,
           category: category || null,
-          amenities: amenities || [],
-          images: images || [],
-          heaterCharge: heaterCharge ? parseInt(heaterCharge, 10) : 600,
-          sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
+          amenities: Array.isArray(amenities) ? amenities : [],
+          images: Array.isArray(images) ? images : [],
+          heaterCharge: heaterCharge ? parseInt(String(heaterCharge), 10) : 600,
+          sortOrder: sortOrder ? parseInt(String(sortOrder), 10) : 0,
         },
       });
       res.status(201).json({ success: true, data: cottage });
-    } catch (error) { next(error); }
+    } catch (error: any) {
+      console.error('Create cottage error:', error?.message || error);
+      next(error);
+    }
   },
 
   async deleteCottage(req: AuthRequest, res: Response, next: NextFunction) {
