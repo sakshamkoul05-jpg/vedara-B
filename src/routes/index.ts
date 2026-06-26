@@ -19,7 +19,6 @@ import webhookRoutes from './webhook.routes';
 import documentRoutes from './document.routes';
 import notificationRoutes from './notification.routes';
 import prisma from '../config/database';
-import { setCsrfCookie } from '../utils/security';
 
 const router = Router();
 
@@ -43,7 +42,7 @@ router.use('/webhooks', webhookRoutes);
 router.use('/documents', documentRoutes);
 router.use('/notifications', notificationRoutes);
 
-router.get('/health', setCsrfCookie, (_req, res) => {
+router.get('/health', (_req, res) => {
   res.json({ success: true, message: 'Vedara Retreat API is running', timestamp: new Date().toISOString() });
 });
 
