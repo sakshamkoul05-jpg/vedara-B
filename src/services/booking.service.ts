@@ -295,32 +295,36 @@ export class BookingService {
       orderBy: { sortOrder: 'asc' },
     });
 
-    const available: any[] = [];
+    const cottageIds = cottages.map(c => c.id);
 
-    for (const cottage of cottages) {
-      const conflicting = await prisma.booking.findFirst({
+    const [conflictingBookings, blockedDates] = await Promise.all([
+      prisma.booking.findMany({
         where: {
-          cottageId: cottage.id,
+          cottageId: { in: cottageIds },
           status: { in: ['PENDING', 'RESERVED', 'CONFIRMED'] },
           checkIn: { lt: checkOut },
           checkOut: { gt: checkIn },
         },
-      });
-
-      const blocked = await prisma.blockedDate.findFirst({
+        select: { cottageId: true },
+      }),
+      prisma.blockedDate.findMany({
         where: {
-          cottageId: cottage.id,
+          cottageId: { in: cottageIds },
           date: { gte: checkIn, lt: checkOut },
         },
-      });
+        select: { cottageId: true },
+      }),
+    ]);
 
-      available.push({
-        ...cottage,
-        isAvailable: !conflicting && !blocked,
-      });
-    }
+    const blockedCottageIds = new Set([
+      ...conflictingBookings.map(b => b.cottageId),
+      ...blockedDates.map(b => b.cottageId),
+    ]);
 
-    return available;
+    return cottages.map(cottage => ({
+      ...cottage,
+      isAvailable: !blockedCottageIds.has(cottage.id),
+    }));
   }
 
   async getBookingCalendar(cottageId: string, month: number, year: number) {
