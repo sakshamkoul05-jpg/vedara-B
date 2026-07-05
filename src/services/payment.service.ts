@@ -21,8 +21,9 @@ class PaymentService {
         receipt: receipt || `receipt_${Date.now()}`,
       });
       return order;
-    } catch (error) {
-      throw new AppError('Failed to create payment order', 500);
+    } catch (error: any) {
+      console.error('Razorpay createOrder error:', error?.status, error?.error?.description || error?.message || error);
+      throw new AppError(`Failed to create payment order: ${error?.error?.description || error?.message || 'unknown'}`, 500);
     }
   }
 
