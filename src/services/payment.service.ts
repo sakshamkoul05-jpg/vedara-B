@@ -7,9 +7,12 @@ class PaymentService {
   private razorpay: Razorpay;
 
   constructor() {
+    const keyId = config.razorpay.keyId;
+    const keySecret = config.razorpay.keySecret;
+    console.log('Razorpay init:', { keyIdPrefix: keyId?.substring(0, 10), keySecretLen: keySecret?.length });
     this.razorpay = new Razorpay({
-      key_id: config.razorpay.keyId,
-      key_secret: config.razorpay.keySecret,
+      key_id: keyId,
+      key_secret: keySecret,
     });
   }
 
@@ -22,7 +25,7 @@ class PaymentService {
       });
       return order;
     } catch (error: any) {
-      console.error('Razorpay createOrder error:', error?.status, error?.error?.description || error?.message || error);
+      console.error('Razorpay createOrder full error:', JSON.stringify(error?.error || error?.message || error));
       throw new AppError(`Failed to create payment order: ${error?.error?.description || error?.message || 'unknown'}`, 500);
     }
   }

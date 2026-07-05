@@ -24,7 +24,10 @@ export const cmsController = {
     try {
       const stats = await cmsService.getDashboardStats();
       res.json({ success: true, data: stats });
-    } catch (error) { next(error); }
+    } catch (error: any) {
+      console.error('Dashboard error:', error?.message || error);
+      next(error);
+    }
   },
 
   async getGallery(req: AuthRequest, res: Response, next: NextFunction) {
