@@ -26,7 +26,7 @@ export const cmsController = {
       res.json({ success: true, data: stats });
     } catch (error: any) {
       console.error('Dashboard error:', error?.message || error);
-      next(error);
+      res.status(500).json({ success: false, error: error?.message || 'Dashboard error' });
     }
   },
 
