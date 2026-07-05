@@ -10,7 +10,7 @@ export const createBookingSchema = z.object({
     checkIn: dateSchema,
     checkOut: dateSchema,
     adults: positiveInt.optional().default(2),
-    children: positiveInt.optional().default(0),
+    children: z.union([z.number().int().min(0), z.string().regex(/^\d+$/)]).transform((v) => typeof v === 'string' ? parseInt(v, 10) : v).optional().default(0),
     specialRequests: sanitizedString(0, 2000).optional(),
     source: z.string().optional(),
     couponCode: z.string().max(50).nullable().optional(),
