@@ -35,6 +35,17 @@ export const isHtml = (input: string): boolean => {
 };
 
 export const csrfProtection = (req: any, res: any, next: any) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+
+  const publicPaths = ['/bookings', '/payments', '/contact', '/chatbot', '/chat', '/packages', '/reviews', '/guests/referral', '/pricing'];
+  const isPublicPath = publicPaths.some(p => req.path?.startsWith(p) || req.originalUrl?.includes(p));
+  if (isPublicPath) return next();
+
+  const token = req.headers['x-csrf-token'] || req.headers['xsrf-token'];
+  const cookieToken = req.cookies?.csrf_token;
+  if (!token || !cookieToken || token !== cookieToken) {
+    return res.status(403).json({ success: false, error: 'CSRF token validation failed' });
+  }
   next();
 };
 
@@ -43,8 +54,8 @@ export const setCsrfCookie = (req: any, res: any, next: any) => {
     const token = crypto.randomBytes(32).toString('hex');
     res.cookie('csrf_token', token, {
       httpOnly: false,
-      secure: true,
-      sameSite: 'none',
+      secure: config.isProd,
+      sameSite: 'strict',
       maxAge: 86400000,
       path: '/',
     });

@@ -39,10 +39,14 @@ FAQs:
 ${faqs.map(f => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n')}
 
 POLICIES:
-- Check-in: 1 PM, Check-out: 11 AM
-- Cancellation: Free 48hrs before, 50% within 48hrs
+- Check-in: 1:00 PM, Check-out: 11:00 AM
+- Reception Hours: 8:00 AM – 10:30 PM daily
+- Cancellation: Free 15+ days before (90% refund), 8-15 days (50% refund), less than 7 days (no refund)
+- Peak season: 21+ days for 50% refund, less than 21 days (no refund)
 - Pets not allowed
-- All taxes included
+- All prices are exclusive of applicable taxes (12% GST added at checkout)
+- Quiet hours: 11:00 PM to 7:00 AM
+- ID proof required at check-in (Aadhaar/Passport/DL for Indians, Passport for foreigners)
 
 NEARBY ATTRACTIONS:
 - Mini Thailand: 1.2 km — A unique rock formation resembling Thailand's beaches
