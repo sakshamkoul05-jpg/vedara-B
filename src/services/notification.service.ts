@@ -12,8 +12,10 @@ export class NotificationService {
     return prisma.notification.create({ data });
   }
 
-  async markAsRead(id: string) {
-    return prisma.notification.update({ where: { id }, data: { isRead: true, readAt: new Date() } });
+  async markAsRead(id: string, userId?: string) {
+    const where: any = { id };
+    if (userId) where.userId = userId;
+    return prisma.notification.update({ where, data: { isRead: true, readAt: new Date() } });
   }
 
   async markAllAsRead(userId?: string) {
@@ -28,8 +30,10 @@ export class NotificationService {
     return prisma.notification.count({ where });
   }
 
-  async delete(id: string) {
-    return prisma.notification.delete({ where: { id } });
+  async delete(id: string, userId?: string) {
+    const where: any = { id };
+    if (userId) where.userId = userId;
+    return prisma.notification.delete({ where });
   }
 }
 

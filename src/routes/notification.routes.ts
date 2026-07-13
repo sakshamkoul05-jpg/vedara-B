@@ -22,7 +22,7 @@ router.get('/unread-count', authenticate, async (req: AuthRequest, res, next) =>
 
 router.put('/:id/read', authenticate, async (req: AuthRequest, res, next) => {
   try {
-    const notification = await notificationService.markAsRead(req.params.id);
+    const notification = await notificationService.markAsRead(req.params.id, req.user?.userId);
     res.json({ success: true, data: notification });
   } catch (error) { next(error); }
 });
@@ -36,7 +36,7 @@ router.put('/read-all', authenticate, async (req: AuthRequest, res, next) => {
 
 router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
   try {
-    await notificationService.delete(req.params.id);
+    await notificationService.delete(req.params.id, req.user?.userId);
     res.json({ success: true, message: 'Deleted' });
   } catch (error) { next(error); }
 });

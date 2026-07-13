@@ -80,6 +80,22 @@ export function setupSocket(io: Server) {
         const sanitizedContent = data.content.replace(/[<>]/g, '').trim();
         if (!sanitizedContent) return;
 
+        const conv = await prisma.chatConversation.findUnique({
+          where: { id: data.conversationId },
+        });
+        if (!conv) {
+          socket.emit('chat:error', { message: 'Conversation not found' });
+          return;
+        }
+        if (conv.socketId !== socket.id) {
+          socket.emit('chat:error', { message: 'Not authorized for this conversation' });
+          return;
+        }
+        if (conv.status !== 'ACTIVE') {
+          socket.emit('chat:error', { message: 'Conversation is closed' });
+          return;
+        }
+
         const msg = await prisma.chatMessage.create({
           data: {
             conversationId: data.conversationId,
@@ -97,11 +113,7 @@ export function setupSocket(io: Server) {
     socket.on('chat:admin-reply', async (data: {
       conversationId: string; content: string; adminName: string; adminId: string
     }) => {
-      const user = (socket as any).user;
-      if (!user) {
-        socket.emit('error', { message: 'Authentication required' });
-        return;
-      }
+      if (!requireAuth(socket, ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'])) return;
 
       try {
         const sanitizedContent = data.content.replace(/[<>]/g, '').trim();
@@ -130,6 +142,20 @@ export function setupSocket(io: Server) {
 
     socket.on('chat:close', async (data: { conversationId: string }) => {
       try {
+        const conv = await prisma.chatConversation.findUnique({
+          where: { id: data.conversationId },
+        });
+        if (!conv) {
+          socket.emit('chat:error', { message: 'Conversation not found' });
+          return;
+        }
+        const isGuestOwner = conv.socketId === socket.id;
+        const isAdmin = (socket as any).user && ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes((socket as any).user.role);
+        if (!isGuestOwner && !isAdmin) {
+          socket.emit('chat:error', { message: 'Not authorized to close this conversation' });
+          return;
+        }
+
         await prisma.chatConversation.update({
           where: { id: data.conversationId },
           data: { status: 'CLOSED', socketId: null },
@@ -141,7 +167,14 @@ export function setupSocket(io: Server) {
       }
     });
 
-    socket.on('chat:typing', (data: { conversationId: string; isTyping: boolean }) => {
+    socket.on('chat:typing', async (data: { conversationId: string; isTyping: boolean }) => {
+      const conv = await prisma.chatConversation.findUnique({
+        where: { id: data.conversationId },
+      });
+      if (!conv) return;
+      const isGuestOwner = conv.socketId === socket.id;
+      const isAdmin = (socket as any).user && ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes((socket as any).user.role);
+      if (!isGuestOwner && !isAdmin) return;
       socket.to('admin').emit('chat:typing', data);
     });
 

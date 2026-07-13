@@ -14,20 +14,30 @@ function esc(str: string | null | undefined): string {
 
 class EmailService {
   private transporter: nodemailer.Transporter;
+  private ready: Promise<boolean>;
 
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: config.smtp.host,
       port: config.smtp.port,
       secure: config.smtp.port === 465,
+      requireTLS: config.smtp.port === 587,
       auth: {
         user: config.smtp.user,
         pass: config.smtp.pass,
       },
     });
+    this.ready = this.transporter.verify()
+      .then(() => { logger.info('Email transporter verified'); return true; })
+      .catch((err) => { logger.error('Email transporter verification failed', { error: err.message }); return false; });
   }
 
   private async send(options: { to: string; subject: string; html: string }) {
+    const isReady = await this.ready;
+    if (!isReady) {
+      logger.warn('Email skipped — transporter not verified', { to: options.to, subject: options.subject });
+      return;
+    }
     try {
       await this.transporter.sendMail({
         from: `"The Vedara" <${config.smtp.from}>`,
@@ -37,7 +47,8 @@ class EmailService {
       });
       logger.info('Email sent', { to: options.to, subject: options.subject });
     } catch (error) {
-      logger.error('Email send failed', { to: options.to, error });
+      logger.error('Email send failed', { to: options.to, subject: options.subject, error });
+      throw error;
     }
   }
 
