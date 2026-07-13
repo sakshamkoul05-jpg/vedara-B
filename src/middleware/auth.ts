@@ -8,7 +8,16 @@ import { cacheSetHas, cacheSetAdd } from '../utils/cache';
 const TOKEN_BLACKLIST_KEY = 'token:blacklist';
 const TOKEN_BLACKLIST_TTL = 7 * 24 * 60 * 60;
 
-const memoryBlacklist = new Set<string>();
+class LRUSet {
+  private map = new Map<string, true>();
+  private maxsize: number;
+  constructor(maxsize: number) { this.maxsize = maxsize; }
+  has(key: string): boolean { if (!this.map.has(key)) return false; const v = this.map.get(key)!; this.map.delete(key); this.map.set(key, v); return true; }
+  add(key: string): void { if (this.map.has(key)) this.map.delete(key); this.map.set(key, true); if (this.map.size > this.maxsize) { const first = this.map.keys().next().value; if (first !== undefined) this.map.delete(first); } }
+  get size(): number { return this.map.size; }
+}
+
+const memoryBlacklist = new LRUSet(10000);
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -87,12 +96,4 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
 export const invalidateToken = async (token: string): Promise<void> => {
   memoryBlacklist.add(token);
   await cacheSetAdd(TOKEN_BLACKLIST_KEY, token).catch(() => {});
-  if (memoryBlacklist.size > 10000) {
-    const iterator = memoryBlacklist.values();
-    for (let i = 0; i < 1000; i++) {
-      const value = iterator.next();
-      if (value.done) break;
-      memoryBlacklist.delete(value.value);
-    }
-  }
 };
