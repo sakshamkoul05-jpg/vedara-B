@@ -35,6 +35,9 @@ router.delete('/rules/:id', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), a
 router.post('/calculate', async (req, res, next) => {
   try {
     const { basePrice, checkIn, checkOut, nights } = req.body;
+    if (!checkIn || !checkOut || isNaN(new Date(checkIn).getTime()) || isNaN(new Date(checkOut).getTime())) {
+      return res.status(400).json({ success: false, message: 'Invalid check-in or check-out date' });
+    }
     const result = await dynamicPricingService.calculatePrice(basePrice, new Date(checkIn), new Date(checkOut), nights);
     res.json({ success: true, data: result });
   } catch (error) { next(error); }

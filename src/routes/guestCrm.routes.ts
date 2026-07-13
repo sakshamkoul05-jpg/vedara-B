@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { guestCrmService } from '../services/guestCrm.service';
 import { authenticate, authorize } from '../middleware/auth';
+import { contactLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -49,7 +50,7 @@ router.post('/:guestId/loyalty/redeem', authenticate, authorize('SUPER_ADMIN', '
   } catch (error) { next(error); }
 });
 
-router.post('/referral', async (req, res, next) => {
+router.post('/referral', contactLimiter, async (req, res, next) => {
   try {
     const { refereeEmail, refereeName, referrerCode } = req.body;
     const result = await guestCrmService.processReferral(refereeEmail, refereeName, referrerCode);

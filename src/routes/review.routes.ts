@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { reviewService } from '../services/review.service';
 import { authenticate, authorize } from '../middleware/auth';
+import { contactLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -18,7 +19,7 @@ router.get('/stats', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', contactLimiter, async (req, res, next) => {
   try {
     const review = await reviewService.create(req.body);
     res.status(201).json({ success: true, data: review });

@@ -120,6 +120,8 @@ model SeasonalPricing {
   createdAt   DateTime @default(now())
 
   cottage     Cottage  @relation(fields: [cottageId], references: [id], onDelete: Cascade)
+
+  @@index([cottageId])
 }
 
 enum StaffStatus {
@@ -225,6 +227,12 @@ model Booking {
   user            User?          @relation(fields: [userId], references: [id])
   payment         Payment?
   reviews         Review[]
+
+  @@index([guestId])
+  @@index([cottageId])
+  @@index([status])
+  @@index([checkIn, checkOut])
+  @@index([createdAt])
 }
 
 model Payment {
@@ -291,6 +299,9 @@ model CafeOrder {
   updatedAt     DateTime      @updatedAt
 
   items         CafeOrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model CafeOrderItem {
@@ -490,6 +501,10 @@ model Review {
   guestProfile GuestProfile @relation(fields: [guestId], references: [guestId])
   booking      Booking?     @relation(fields: [bookingId], references: [id])
   cottage      Cottage?     @relation(fields: [cottageId], references: [id])
+
+  @@index([guestId])
+  @@index([cottageId])
+  @@index([isVisible])
 }
 
 // Loyalty & Referral Program
