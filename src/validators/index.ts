@@ -9,8 +9,9 @@ const sanitizedString = (min = 1, max = 1000) =>
     .transform((val) => val.trim().replace(/[<>]/g, ''));
 
 export const phoneSchema = z.string()
-  .regex(/^[\d\s+\-()]{7,20}$/, 'Invalid phone number format')
-  .transform((v) => v.trim());
+  .transform((v) => v.replace(/[^\d+]/g, ''))
+  .refine((v) => /^\+?\d{8,15}$/.test(v), 'Invalid phone number format')
+  .transform((v) => (v.startsWith('+') ? v : `+${v}`));
 
 export const emailSchema = z.string()
   .email('Invalid email address')

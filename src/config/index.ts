@@ -27,6 +27,7 @@ export const config = {
   razorpay: {
     keyId: requireEnv('RAZORPAY_KEY_ID'),
     keySecret: requireEnv('RAZORPAY_KEY_SECRET'),
+    webhookSecret: requireEnv('RAZORPAY_WEBHOOK_SECRET'),
   },
 
   cloudinary: {

@@ -91,6 +91,24 @@ export const bookingController = {
     } catch (error) { next(error); }
   },
 
+  async priceEstimate(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { cottageId, checkIn, checkOut, adults, children, couponCode } = req.body;
+      if (!cottageId || !checkIn || !checkOut) {
+        return res.status(400).json({ success: false, error: 'cottageId, checkIn and checkOut are required' });
+      }
+      const estimate = await bookingService.priceEstimate({
+        cottageId,
+        checkIn: new Date(checkIn),
+        checkOut: new Date(checkOut),
+        adults: parseInt(adults) || 2,
+        children: parseInt(children) || 0,
+        couponCode,
+      });
+      res.json({ success: true, data: estimate });
+    } catch (error) { next(error); }
+  },
+
   async approveBooking(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const booking = await bookingService.approveBooking(req.params.id, req.user?.userId);

@@ -10,6 +10,7 @@ const router = Router();
 router.get('/availability', bookingController.checkAvailability);
 router.get('/available-cottages', bookingController.getAvailableCottages);
 router.get('/calendar', bookingController.getCalendar);
+router.post('/estimate', bookingController.priceEstimate);
 
 router.post('/', bookingLimiter, validate(createBookingSchema), bookingController.createBooking);
 router.post('/confirm-payment', bookingLimiter, validate(confirmPaymentSchema), bookingController.confirmPayment);

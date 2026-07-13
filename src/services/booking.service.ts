@@ -336,6 +336,84 @@ export class BookingService {
     return { ...booking, status: 'CONFIRMED' };
   }
 
+  async confirmPaymentWebhook(bookingId: string, paymentData: {
+    paymentId: string;
+    orderId: string;
+    gateway: string;
+    method?: string;
+    amount?: number;
+  }) {
+    const b = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { guest: true, cottage: true },
+    });
+    if (!b) throw new AppError('Booking not found', 404);
+
+    // Idempotent: already confirmed via client callback
+    if (b.status === 'CONFIRMED') return { ...b, status: 'CONFIRMED' as const };
+
+    if (b.status !== 'PENDING' && b.status !== 'RESERVED') return b;
+
+    const existingPayment = await prisma.payment.findFirst({
+      where: { paymentId: paymentData.paymentId },
+    });
+    if (existingPayment) return { ...b, status: 'CONFIRMED' as const };
+
+    const conflicting = await prisma.booking.findFirst({
+      where: {
+        cottageId: b.cottageId,
+        id: { not: b.id },
+        status: { in: ['PENDING', 'RESERVED', 'CONFIRMED'] },
+        checkIn: { lt: b.checkOut },
+        checkOut: { gt: b.checkIn },
+      },
+    });
+
+    if (conflicting) {
+      await prisma.booking.update({
+        where: { id: b.id },
+        data: { status: 'CANCELLED', cancelReason: 'Availability conflict during payment processing' },
+      });
+      try {
+        if (paymentData.paymentId) {
+          await paymentService.refundPayment(paymentData.paymentId, b.finalAmount);
+        }
+      } catch (refundError: any) {
+        console.error('Webhook refund failed for booking conflict:', b.bookingRef, refundError?.message);
+      }
+      return b;
+    }
+
+    await prisma.booking.update({
+      where: { id: b.id },
+      data: { status: 'CONFIRMED', paymentStatus: 'PAID' },
+    });
+
+    await prisma.payment.create({
+      data: {
+        bookingId,
+        orderId: paymentData.orderId,
+        paymentId: paymentData.paymentId,
+        amount: paymentData.amount ?? b.finalAmount,
+        status: 'PAID',
+        gateway: paymentData.gateway as any,
+        method: paymentData.method,
+      },
+    });
+
+    emailService.sendBookingConfirmation(
+      b.guest.email || 'guest@vedara.com',
+      b.bookingRef,
+      b.guest.name,
+      b.cottage.name,
+      b.checkIn,
+      b.checkOut,
+      b.finalAmount
+    ).catch(() => {});
+
+    return { ...b, status: 'CONFIRMED' as const };
+  }
+
   async getAvailableCottages(checkIn: Date, checkOut: Date) {
     const cottages = await prisma.cottage.findMany({
       where: { isActive: true },
@@ -589,6 +667,81 @@ export class BookingService {
     });
 
     return updated;
+  }
+
+  async priceEstimate(data: {
+    cottageId: string;
+    checkIn: Date;
+    checkOut: Date;
+    adults: number;
+    children?: number;
+    couponCode?: string;
+  }) {
+    const cottage = await prisma.cottage.findUnique({ where: { id: data.cottageId } });
+    if (!cottage) throw new AppError('Cottage not found', 404);
+
+    const nights = calculateNights(data.checkIn, data.checkOut);
+    if (nights < 1) throw new AppError('Minimum stay is 1 night', 400);
+
+    const seasonalPricing = await prisma.seasonalPricing.findFirst({
+      where: {
+        cottageId: data.cottageId,
+        startDate: { lte: data.checkOut },
+        endDate: { gte: data.checkIn },
+        isActive: true,
+      },
+      orderBy: { pricePerNight: 'desc' },
+    });
+
+    let pricePerNight = cottage.pricePerNight;
+    let minStay = 1;
+    if (seasonalPricing) {
+      pricePerNight = seasonalPricing.pricePerNight;
+      minStay = seasonalPricing.minStay;
+    }
+
+    const baseAmount = pricePerNight * nights;
+
+    const totalGuests = data.adults + (data.children || 0);
+    const extraGuests = Math.max(0, totalGuests - 2);
+    const extraGuestCharges = extraGuests * 1500 * nights;
+
+    let totalAmount = baseAmount + extraGuestCharges;
+    let discount = 0;
+    let coupon = null as null | { code: string; discountType: string; discountValue: number };
+
+    if (data.couponCode) {
+      const found = await prisma.coupon.findUnique({ where: { code: data.couponCode } });
+      if (found && found.isActive && (!found.expiresAt || new Date() <= found.expiresAt) &&
+        (found.maxUsage === 0 || found.usedCount < found.maxUsage) && totalAmount >= found.minAmount) {
+        coupon = found;
+        discount = found.discountType === 'PERCENTAGE'
+          ? (totalAmount * found.discountValue) / 100
+          : found.discountValue;
+      }
+    }
+
+    const amountAfterDiscount = Math.max(0, totalAmount - discount);
+    const taxRate = 0.12;
+    const tax = Math.round(amountAfterDiscount * taxRate);
+    const finalAmount = amountAfterDiscount + tax;
+
+    return {
+      cottageId: cottage.id,
+      cottageName: cottage.name,
+      pricePerNight,
+      nights,
+      baseAmount,
+      extraGuests,
+      extraGuestCharges,
+      discount,
+      couponApplied: !!coupon,
+      taxRate,
+      tax,
+      totalAmount: finalAmount,
+      minStay,
+      currency: 'INR',
+    };
   }
 }
 

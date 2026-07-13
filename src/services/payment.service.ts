@@ -15,12 +15,13 @@ class PaymentService {
     });
   }
 
-  async createOrder(amount: number, currency: string = 'INR', receipt?: string) {
+  async createOrder(amount: number, currency: string = 'INR', receipt?: string, notes?: Record<string, string>) {
     try {
       const order = await this.razorpay.orders.create({
         amount: Math.round(amount * 100),
         currency,
         receipt: receipt || `receipt_${Date.now()}`,
+        ...(notes ? { notes } : {}),
       });
       return order;
     } catch (error: any) {
@@ -37,6 +38,19 @@ class PaymentService {
       .digest('hex');
     if (expectedSignature.length !== signature.length) return false;
     return crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature));
+  }
+
+  verifyWebhookSignature(rawBody: Buffer | string, signature: string): boolean {
+    if (!signature || !config.razorpay.webhookSecret) return false;
+    const expectedSignature = crypto
+      .createHmac('sha256', config.razorpay.webhookSecret)
+      .update(rawBody)
+      .digest('hex');
+    try {
+      return crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature));
+    } catch {
+      return false;
+    }
   }
 
   async getPaymentDetails(paymentId: string) {
