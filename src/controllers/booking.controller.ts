@@ -52,21 +52,32 @@ export const bookingController = {
 
   async confirmPayment(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { bookingId, bookingRef, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+      const { bookingId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
 
       const valid = paymentService.verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature);
       if (!valid) {
         return res.status(400).json({ success: false, error: 'Payment verification failed' });
       }
 
-      const booking = await bookingService.confirmPayment(bookingId, {
+      // Verify paid amount matches booking amount
+      const paymentDetails = await paymentService.getPaymentDetails(razorpayPaymentId);
+      const booking = await bookingService.getBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ success: false, error: 'Booking not found' });
+      }
+      const expectedAmount = Math.round(booking.finalAmount * 100);
+      if (paymentDetails.amount !== expectedAmount) {
+        return res.status(400).json({ success: false, error: 'Payment amount does not match booking amount' });
+      }
+
+      const confirmed = await bookingService.confirmPayment(bookingId, {
         paymentId: razorpayPaymentId,
         orderId: razorpayOrderId,
         signature: razorpaySignature,
         gateway: 'RAZORPAY',
       });
 
-      res.json({ success: true, data: booking });
+      res.json({ success: true, data: confirmed });
     } catch (error) { next(error); }
   },
 

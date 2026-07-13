@@ -46,17 +46,6 @@ router.get('/health', (_req, res) => {
   res.json({ success: true, message: 'Vedara Retreat API is running', timestamp: new Date().toISOString() });
 });
 
-router.get('/debug/razorpay', (_req, res) => {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  res.json({
-    keyIdSet: !!keyId,
-    keyIdPrefix: keyId ? keyId.substring(0, 8) : null,
-    keySecretSet: !!keySecret,
-    keySecretLength: keySecret ? keySecret.length : 0,
-  });
-});
-
 router.get('/packages/active', async (_req, res, next) => {
   try {
     const now = new Date();

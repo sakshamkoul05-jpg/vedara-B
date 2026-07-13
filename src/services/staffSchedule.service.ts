@@ -1,4 +1,5 @@
 import prisma from '../config/database';
+import { AppError } from '../middleware/errorHandler';
 
 export class StaffScheduleService {
   async getShifts(staffId: string, startDate: Date, endDate: Date) {
@@ -86,6 +87,4 @@ export class StaffScheduleService {
     return { shifts, attendance, totalDays, presentDays, totalHours, totalOvertime };
   }
 }
-
-import { AppError } from '../middleware/errorHandler';
 export const staffScheduleService = new StaffScheduleService();

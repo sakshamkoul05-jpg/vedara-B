@@ -1,16 +1,12 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
 import { authService } from '../services/auth.service';
-import { z } from 'zod';
-
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(6) });
-const createUserSchema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(6), role: z.string(), phone: z.string().optional() });
-const updateUserSchema = z.object({ name: z.string().optional(), phone: z.string().optional(), role: z.string().optional(), isActive: z.boolean().optional() });
+import { loginSchema as loginValidator, createUserSchema as createUserValidator, updateUserSchema as updateUserValidator } from '../validators/auth.validator';
 
 export const authController = {
   async login(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { email, password } = loginSchema.parse(req.body);
+      const { email, password } = loginValidator.parse(req.body).body;
       const result = await authService.login(email, password);
       res.json({ success: true, data: result });
     } catch (error) { next(error); }
@@ -41,7 +37,7 @@ export const authController = {
 
   async createUser(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const data = createUserSchema.parse(req.body);
+      const { body: data } = createUserValidator.parse({ body: req.body });
       const user = await authService.createUser(data);
       res.status(201).json({ success: true, data: user });
     } catch (error) { next(error); }
@@ -49,7 +45,7 @@ export const authController = {
 
   async updateUser(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const data = updateUserSchema.parse(req.body);
+      const { body: data } = updateUserValidator.parse({ body: req.body });
       const user = await authService.updateUser(req.params.id as string, data);
       res.json({ success: true, data: user });
     } catch (error) { next(error); }

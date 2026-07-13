@@ -1,12 +1,16 @@
 import prisma from '../config/database';
 import { config } from '../config';
 import { AppError } from '../middleware/errorHandler';
-import { generateBookingRef, calculateNights, isDateOverlap } from '../utils/helpers';
+import { generateBookingRef, calculateNights } from '../utils/helpers';
 import { emailService } from './email.service';
 import { whatsappService } from './whatsapp.service';
 import { paymentService } from './payment.service';
 
 export class BookingService {
+  async getBookingById(bookingId: string) {
+    return prisma.booking.findUnique({ where: { id: bookingId } });
+  }
+
   async checkAvailability(cottageId: string, checkIn: Date, checkOut: Date) {
     const cottage = await prisma.cottage.findUnique({ where: { id: cottageId } });
     if (!cottage) throw new AppError('Cottage not found', 404);
@@ -54,6 +58,9 @@ export class BookingService {
     couponCode?: string;
   }) {
     return prisma.$transaction(async (tx) => {
+      // Lock the cottage row to prevent concurrent bookings
+      await tx.$executeRaw`SELECT 1 FROM "Cottage" WHERE id = ${data.cottageId} FOR UPDATE`;
+
       const cottage = await tx.cottage.findUnique({ where: { id: data.cottageId } });
       if (!cottage) throw new AppError('Cottage not found', 404);
 
@@ -437,10 +444,22 @@ export class BookingService {
   }
 
   async cancelBooking(bookingId: string, reason?: string) {
-    const booking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: 'CANCELLED', cancelledAt: new Date(), cancelReason: reason },
-      include: { guest: true, cottage: true },
+    const booking = await prisma.$transaction(async (tx) => {
+      const b = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: { guest: true, cottage: true },
+      });
+
+      if (!b) throw new AppError('Booking not found', 404);
+      if (!['PENDING', 'RESERVED', 'CONFIRMED'].includes(b.status)) {
+        throw new AppError(`Cannot cancel a booking with status ${b.status}`, 400);
+      }
+
+      return tx.booking.update({
+        where: { id: bookingId },
+        data: { status: 'CANCELLED', cancelledAt: new Date(), cancelReason: reason },
+        include: { guest: true, cottage: true },
+      });
     });
 
     if (booking.guest.email) {

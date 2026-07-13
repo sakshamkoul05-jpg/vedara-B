@@ -9,7 +9,6 @@ class PaymentService {
   constructor() {
     const keyId = config.razorpay.keyId;
     const keySecret = config.razorpay.keySecret;
-    console.log('Razorpay init:', { keyIdPrefix: keyId?.substring(0, 10), keySecretLen: keySecret?.length });
     this.razorpay = new Razorpay({
       key_id: keyId,
       key_secret: keySecret,

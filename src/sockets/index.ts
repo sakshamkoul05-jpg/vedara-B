@@ -1,12 +1,10 @@
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/database';
 import { config } from '../config';
 import { JwtPayload } from '../types';
 import { whatsappService } from '../services/whatsapp.service';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
 
 const authenticateSocket = (socket: Socket, next: (err?: Error) => void) => {
   const token = socket.handshake.auth?.token || socket.handshake.query?.token;

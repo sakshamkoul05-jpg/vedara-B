@@ -25,8 +25,6 @@ const allowedOrigins = [
 function isAllowedOrigin(origin: string): boolean {
   if (!origin) return true;
   if (allowedOrigins.includes(origin)) return true;
-  if (origin.includes('.vercel.app')) return true;
-  if (origin.includes('.railway.app')) return true;
   return false;
 }
 

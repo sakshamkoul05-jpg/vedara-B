@@ -8,10 +8,11 @@ export class CafeInventoryService {
   }
 
   async getLowStock() {
-    return prisma.cafeInventory.findMany({
-      where: { isActive: true, quantity: { lte: prisma.cafeInventory.fields.minStock } },
+    const items = await prisma.cafeInventory.findMany({
+      where: { isActive: true },
       orderBy: { quantity: 'asc' },
     });
+    return items.filter(item => item.quantity <= item.minStock);
   }
 
   async create(data: { name: string; category: string; quantity: number; unit?: string; minStock?: number; costPerUnit?: number; supplier?: string }) {
@@ -34,17 +35,22 @@ export class CafeInventoryService {
   }
 
   async deduct(id: string, quantity: number, reason: string, performedBy?: string) {
-    const item = await prisma.cafeInventory.findUnique({ where: { id } });
-    if (!item || item.quantity < quantity) throw new Error('Insufficient stock');
+    return prisma.$transaction(async (tx) => {
+      // Lock the inventory row to prevent concurrent deductions
+      await tx.$executeRaw`SELECT 1 FROM "CafeInventory" WHERE id = ${id} FOR UPDATE`;
 
-    const updated = await prisma.cafeInventory.update({
-      where: { id },
-      data: { quantity: { decrement: quantity } },
+      const item = await tx.cafeInventory.findUnique({ where: { id } });
+      if (!item || item.quantity < quantity) throw new Error('Insufficient stock');
+
+      const updated = await tx.cafeInventory.update({
+        where: { id },
+        data: { quantity: { decrement: quantity } },
+      });
+      await tx.cafeInventoryLog.create({
+        data: { inventoryId: id, type: 'DEDUCT', quantity, reason, performedBy },
+      });
+      return updated;
     });
-    await prisma.cafeInventoryLog.create({
-      data: { inventoryId: id, type: 'DEDUCT', quantity, reason, performedBy },
-    });
-    return updated;
   }
 
   async getLogs(inventoryId: string, limit = 50) {

@@ -35,16 +35,21 @@ export class GuestCrmService {
   }
 
   async redeemPoints(guestId: string, points: number, description?: string) {
-    const profile = await prisma.guestProfile.findUnique({ where: { guestId } });
-    if (!profile || profile.loyaltyPoints < points) {
-      throw new AppError('Insufficient loyalty points', 400);
-    }
-    await prisma.guestProfile.update({
-      where: { guestId },
-      data: { loyaltyPoints: { decrement: points } },
-    });
-    return prisma.loyaltyTransaction.create({
-      data: { guestId, points: -points, type: 'REDEEM', description },
+    return prisma.$transaction(async (tx) => {
+      // Lock the profile row to prevent concurrent redemptions
+      await tx.$executeRaw`SELECT 1 FROM "GuestProfile" WHERE "guestId" = ${guestId} FOR UPDATE`;
+
+      const profile = await tx.guestProfile.findUnique({ where: { guestId } });
+      if (!profile || profile.loyaltyPoints < points) {
+        throw new AppError('Insufficient loyalty points', 400);
+      }
+      await tx.guestProfile.update({
+        where: { guestId },
+        data: { loyaltyPoints: { decrement: points } },
+      });
+      return tx.loyaltyTransaction.create({
+        data: { guestId, points: -points, type: 'REDEEM', description },
+      });
     });
   }
 
