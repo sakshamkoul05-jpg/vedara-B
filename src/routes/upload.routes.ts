@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs/promises';
 import { authenticate, authorize } from '../middleware/auth';
 import { v2 as cloudinary } from 'cloudinary';
 import { config } from '../config';
@@ -77,6 +78,8 @@ router.post(
         allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif', 'pdf'],
       });
 
+      await fs.unlink(req.file.path).catch(() => {});
+
       res.json({
         success: true,
         data: {
@@ -89,6 +92,9 @@ router.post(
         },
       });
     } catch (error) {
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(() => {});
+      }
       next(error);
     }
   },

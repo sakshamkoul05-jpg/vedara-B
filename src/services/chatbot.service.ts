@@ -59,16 +59,26 @@ If you don't know something, say "Let me connect you with our team."
 `;
   }
 
-  async chat(message: string, history: { role: 'user' | 'assistant'; content: string }[] = []) {
+  async chat(message: string, history: { role: 'user' | 'assistant' | string; content: string }[] = []) {
     const systemContext = await this.getSystemContext();
+
+    const sanitizedHistory = (history || [])
+      .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+      .slice(-10)
+      .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+
+    const safeMessage = typeof message === 'string' ? message.slice(0, 2000) : '';
+    if (!safeMessage.trim()) {
+      return 'Please let me know how I can help you.';
+    }
 
     try {
       const response = await this.groq.chat.completions.create({
         model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemContext },
-          ...history.slice(-10).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
-          { role: 'user', content: message },
+          ...sanitizedHistory,
+          { role: 'user', content: safeMessage },
         ],
         max_tokens: 300,
         temperature: 0.7,

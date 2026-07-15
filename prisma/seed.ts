@@ -4,7 +4,14 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'ChangeMeInProduction!', 12);
+  const adminPasswordRaw = process.env.ADMIN_PASSWORD;
+  if (!adminPasswordRaw || adminPasswordRaw.length < 8) {
+    throw new Error(
+      'ADMIN_PASSWORD environment variable is required (min 8 characters) to seed staff accounts. ' +
+      'Refusing to seed with a default/guessable password.'
+    );
+  }
+  const adminPassword = await bcrypt.hash(adminPasswordRaw, 12);
 
   await prisma.user.upsert({
     where: { email: 'vedararetreat@gmail.com' },

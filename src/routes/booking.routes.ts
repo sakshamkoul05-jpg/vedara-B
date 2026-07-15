@@ -14,7 +14,7 @@ router.get('/calendar', bookingController.getCalendar);
 router.post('/', bookingLimiter, validate(createBookingSchema), bookingController.createBooking);
 router.post('/confirm-payment', bookingLimiter, validate(confirmPaymentSchema), bookingController.confirmPayment);
 
-router.get('/my-bookings', bookingController.getUserBookings);
+router.get('/my-bookings', authenticate, bookingController.getUserBookings);
 
 router.get('/all', authenticate, authorize('SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'), bookingController.getAllBookings);
 router.post('/:id/approve', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), bookingController.approveBooking);

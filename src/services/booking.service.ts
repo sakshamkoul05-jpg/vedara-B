@@ -56,6 +56,8 @@ export class BookingService {
     source?: string;
     userId?: string;
     couponCode?: string;
+    address?: string;
+    idProof?: string;
   }) {
     return prisma.$transaction(async (tx) => {
       // Lock the cottage row to prevent concurrent bookings
@@ -115,21 +117,35 @@ export class BookingService {
       }
 
       let totalAmount = pricePerNight * nights;
-      const extraGuests = Math.max(0, (data.adults + (data.children || 0)) - 2);
+      const extraGuests = Math.max(0, (data.adults + (data.children || 0)) - cottage.capacity);
       const extraGuestCharges = extraGuests * 1500 * nights;
       totalAmount += extraGuestCharges;
       let discount = 0;
+
+      let appliedCouponId: string | null = null;
 
       if (data.couponCode) {
         const coupon = await tx.coupon.findUnique({ where: { code: data.couponCode } });
         if (!coupon || !coupon.isActive) {
           throw new AppError('Invalid coupon code', 400);
         }
+        appliedCouponId = coupon.id;
         if (coupon.expiresAt && new Date() > coupon.expiresAt) {
           throw new AppError('Coupon has expired', 400);
         }
         if (coupon.maxUsage > 0 && coupon.usedCount >= coupon.maxUsage) {
           throw new AppError('Coupon usage limit reached', 400);
+        }
+        if (coupon.maxUsesPerUser > 0) {
+          const userKey = data.userId || data.guestEmail || data.guestPhone;
+          if (userKey) {
+            const perUserUsage = await tx.couponUsage.count({
+              where: { couponId: coupon.id, userId: userKey },
+            });
+            if (perUserUsage >= coupon.maxUsesPerUser) {
+              throw new AppError('This coupon has already been used by you', 400);
+            }
+          }
         }
         if (totalAmount < coupon.minAmount) {
           throw new AppError(`Minimum order amount for this coupon is ₹${coupon.minAmount}`, 400);
@@ -165,6 +181,16 @@ export class BookingService {
             name: data.guestName,
             email: data.guestEmail,
             phone: data.guestPhone,
+            address: data.address,
+            idProof: data.idProof,
+          },
+        });
+      } else if (data.address || data.idProof) {
+        guest = await tx.guest.update({
+          where: { id: guest.id },
+          data: {
+            ...(data.address ? { address: data.address } : {}),
+            ...(data.idProof ? { idProof: data.idProof } : {}),
           },
         });
       }
@@ -192,6 +218,15 @@ export class BookingService {
         },
         include: { cottage: true, guest: true },
       });
+
+      if (data.couponCode && appliedCouponId) {
+        const userKey = data.userId || data.guestEmail || data.guestPhone;
+        if (userKey) {
+          await tx.couponUsage.create({
+            data: { couponId: appliedCouponId, userId: userKey, bookingId: booking.id },
+          });
+        }
+      }
 
       return booking;
     });
@@ -242,7 +277,12 @@ export class BookingService {
 
       await tx.booking.update({
         where: { id: b.id },
-        data: { status: 'CONFIRMED', paymentStatus: 'PAID' },
+        data: {
+          status: 'CONFIRMED',
+          paymentStatus: 'PAID',
+          paymentId: paymentData.paymentId,
+          paymentGateway: paymentData.gateway as any,
+        },
       });
 
       await tx.payment.create({

@@ -3,13 +3,10 @@ dotenv.config();
 
 function requireEnv(key: string): string {
   const value = process.env[key];
-  if (!value) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(`Missing required environment variable: ${key}`);
-    }
-    console.warn(`WARNING: Missing env var ${key} — using insecure dev fallback`);
+  if (!value || value.trim() === '') {
+    throw new Error(`Missing required environment variable: ${key}`);
   }
-  return value || '';
+  return value;
 }
 
 export const config = {
