@@ -26,6 +26,9 @@ const allowedOrigins = [
 function isAllowedOrigin(origin: string): boolean {
   if (!origin) return true;
   if (allowedOrigins.includes(origin)) return true;
+  // Allow any Vercel deployment (production + preview) so the frontend keeps
+  // working regardless of the generated *.vercel.app hostname.
+  if (origin.endsWith('.vercel.app')) return true;
   return false;
 }
 
@@ -37,7 +40,7 @@ const io = new Server(httpServer, {
   cors: {
     origin: (origin, callback) => {
       if (!origin || isAllowedOrigin(origin)) return callback(null, true);
-      callback(new Error('Not allowed by CORS'));
+      callback(null, false);
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
