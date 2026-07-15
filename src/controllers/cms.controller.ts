@@ -60,7 +60,7 @@ export const cmsController = {
 
   async updateCottage(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const allowedFields = ['name', 'slug', 'description', 'shortDesc', 'pricePerNight', 'capacity', 'bedrooms', 'bathrooms', 'size', 'category', 'amenities', 'images', 'heaterCharge', 'isActive', 'sortOrder'];
+      const allowedFields = ['name', 'slug', 'description', 'shortDesc', 'pricePerNight', 'capacity', 'extraGuestCharge', 'bedrooms', 'bathrooms', 'size', 'category', 'amenities', 'images', 'heaterCharge', 'isActive', 'sortOrder'];
       const data: Record<string, any> = {};
       for (const key of allowedFields) {
         if (req.body[key] !== undefined) {
@@ -84,7 +84,7 @@ export const cmsController = {
 
   async createCottage(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { name, slug, description, shortDesc, pricePerNight, capacity, bedrooms, bathrooms, size, category, amenities, images, heaterCharge, sortOrder } = req.body;
+      const { name, slug, description, shortDesc, pricePerNight, capacity, extraGuestCharge, bedrooms, bathrooms, size, category, amenities, images, heaterCharge, sortOrder } = req.body;
       if (!name || !slug || !description || pricePerNight === undefined) {
         return res.status(400).json({ success: false, error: 'Name, slug, description, and price are required' });
       }
@@ -107,6 +107,7 @@ export const cmsController = {
           amenities: Array.isArray(amenities) ? amenities : [],
           images: Array.isArray(images) ? images : [],
           heaterCharge: heaterCharge ? parseInt(String(heaterCharge), 10) : 600,
+          extraGuestCharge: extraGuestCharge ? parseInt(String(extraGuestCharge), 10) : 1500,
           sortOrder: sortOrder ? parseInt(String(sortOrder), 10) : 0,
         },
       });
