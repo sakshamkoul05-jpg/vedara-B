@@ -12,6 +12,7 @@ import routes from './routes';
 import { setupSocket } from './sockets';
 import { startCronJobs } from './jobs';
 import { logger } from './utils/logger';
+import { prisma } from './config/database';
 
 const allowedOrigins = [
   config.frontendUrl,
@@ -98,8 +99,42 @@ app.use(errorHandler);
 setupSocket(io);
 startCronJobs();
 
-httpServer.listen(config.port, () => {
-  logger.info(`Vedara Retreat API running on port ${config.port}`, { env: config.nodeEnv });
+// Idempotent schema patches applied on boot so the production DB stays in sync
+// with schema.prisma even though the deploy pipeline does not run migrations.
+// Safe to run on every start; each statement is a no-op if already applied.
+async function applyPendingSchema(): Promise<void> {
+  const patches = [
+    `ALTER TABLE "Cottage" ADD COLUMN IF NOT EXISTS "extraGuestCharge" INTEGER NOT NULL DEFAULT 1500;`,
+    `CREATE TABLE IF NOT EXISTS "CouponUsage" (
+      "id" TEXT NOT NULL,
+      "couponId" TEXT NOT NULL,
+      "bookingId" TEXT NOT NULL,
+      "usedById" TEXT NOT NULL,
+      "usedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "discountAmount" INTEGER NOT NULL,
+      CONSTRAINT "CouponUsage_pkey" PRIMARY KEY ("id")
+    );`,
+    `CREATE INDEX IF NOT EXISTS "CouponUsage_couponId_idx" ON "CouponUsage"("couponId");`,
+    `CREATE INDEX IF NOT EXISTS "CouponUsage_bookingId_idx" ON "CouponUsage"("bookingId");`,
+    `ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_couponId_fkey" FOREIGN KEY ("couponId") REFERENCES "Coupon"("id") ON DELETE CASCADE ON UPDATE CASCADE;`,
+    `ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "Booking"("id") ON DELETE CASCADE ON UPDATE CASCADE;`,
+    `CREATE INDEX IF NOT EXISTS "Booking_status_holdExpiresAt_idx" ON "Booking"("status","holdExpiresAt");`,
+  ];
+
+  for (const sql of patches) {
+    try {
+      await prisma.$executeRawUnsafe(sql);
+      logger.info('Applied schema patch', { sql });
+    } catch (e) {
+      logger.error('Schema patch failed (non-fatal)', { sql, error: (e as Error)?.message });
+    }
+  }
+}
+
+applyPendingSchema().finally(() => {
+  httpServer.listen(config.port, () => {
+    logger.info(`Vedara Retreat API running on port ${config.port}`, { env: config.nodeEnv });
+  });
 });
 
 export default app;
