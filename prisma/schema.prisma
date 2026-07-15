@@ -89,6 +89,7 @@ model Cottage {
   shortDesc     String?
   pricePerNight Int
   capacity      Int      @default(2)
+  extraGuestCharge Int   @default(1500)
   bedrooms      Int      @default(1)
   bathrooms     Int      @default(1)
   size          Int?

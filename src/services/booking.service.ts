@@ -118,7 +118,7 @@ export class BookingService {
 
       let totalAmount = pricePerNight * nights;
       const extraGuests = Math.max(0, (data.adults + (data.children || 0)) - cottage.capacity);
-      const extraGuestCharges = extraGuests * 1500 * nights;
+      const extraGuestCharges = extraGuests * cottage.extraGuestCharge * nights;
       totalAmount += extraGuestCharges;
       let discount = 0;
 
