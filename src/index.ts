@@ -89,6 +89,23 @@ app.use(cookieParser(config.cookieSecret));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+// Diagnostic: log whether body parsing succeeds on POST/PUT/PATCH requests.
+// Remove after confirming Railway deploys with working body parsing.
+app.use((req, _res, next) => {
+  if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+    logger.info('[body-parse-check]', {
+      method: req.method,
+      url: req.url,
+      contentType: req.headers['content-type'],
+      bodyType: typeof req.body,
+      bodyKeys: req.body && typeof req.body === 'object' ? Object.keys(req.body) : null,
+      bodyIsArray: Array.isArray(req.body),
+      bodyLength: req.headers['content-length'],
+    });
+  }
+  next();
+});
+
 app.use('/api', globalLimiter);
 app.use('/api', apiLimiter);
 
