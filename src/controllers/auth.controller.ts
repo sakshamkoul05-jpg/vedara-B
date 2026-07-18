@@ -6,7 +6,7 @@ import { loginSchema as loginValidator, createUserSchema as createUserValidator,
 export const authController = {
   async login(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { email, password } = loginValidator.parse(req.body).body;
+      const { email, password } = req.body;
       const result = await authService.login(email, password);
       res.json({ success: true, data: result });
     } catch (error) { next(error); }
