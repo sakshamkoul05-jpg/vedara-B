@@ -12,6 +12,7 @@ router.post('/login', authLimiter, checkLockout, validate(loginSchema), authCont
 router.post('/refresh', authController.refresh);
 router.post('/logout', authenticate, authController.logout);
 router.get('/profile', authenticate, authController.profile);
+router.post('/change-password', authenticate, authController.changePassword);
 router.post('/users', authenticate, authorize('SUPER_ADMIN', 'MANAGER'), validate(createUserSchema), authController.createUser);
 router.put('/users/:id', authenticate, authorize('SUPER_ADMIN'), validate(updateUserSchema), authController.updateUser);
 

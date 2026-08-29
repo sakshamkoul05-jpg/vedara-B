@@ -35,6 +35,17 @@ export const authController = {
     } catch (error) { next(error); }
   },
 
+  async changePassword(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ success: false, error: 'Current and new password are required' });
+      }
+      const result = await authService.changePassword(req.user!.userId, currentPassword, newPassword);
+      res.json({ success: true, message: result });
+    } catch (error) { next(error); }
+  },
+
   async createUser(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { body: data } = createUserValidator.parse({ body: req.body });

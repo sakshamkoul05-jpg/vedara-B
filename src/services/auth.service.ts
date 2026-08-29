@@ -136,6 +136,26 @@ export class AuthService {
     });
   }
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new AppError('User not found.', 404);
+
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) throw new AppError('Current password is incorrect.', 401);
+
+    const validation = validatePassword(newPassword);
+    if (!validation.valid) throw new AppError(validation.message, 400);
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    logger.info('Password changed', { userId });
+    return 'Password updated successfully.';
+  }
+
   async getProfile(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
